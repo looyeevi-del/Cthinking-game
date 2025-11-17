@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="zh">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,29 +6,29 @@
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- ===== 美丽 UI 的 CSS ===== -->
+<!-- ===== 蛤蟆主题 UI ===== -->
 <style>
     body {
         margin: 0;
         font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-        background: linear-gradient(135deg, #dbeafe, #fef3c7);
+        background: linear-gradient(135deg, #d1fae5, #fef9c3); /* 青蛙绿 + 柔黄 */
         min-height: 100vh;
     }
 
-    /* 顶部标题栏 */
+    /* 顶部栏 */
     header {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 12px;
         padding: 18px 0;
-        background: #1e293b;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        background: #14532d; /* 森林深绿 */
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     }
 
     header img {
         height: 48px;
-        border-radius: 8px;
+        border-radius: 10px;
     }
 
     header span {
@@ -39,60 +37,72 @@
         font-weight: bold;
     }
 
-    /* 卡片整体容器 */
+    /* 主容器 */
     .container {
         max-width: 760px;
         margin: 0 auto;
         padding: 20px;
     }
 
-    /* 最漂亮的玻璃卡片 */
+    /* 玻璃卡片（蛤蟆版） */
     .card {
-        background: rgba(255,255,255,0.65);
+        background: rgba(255,255,255,0.55);
         backdrop-filter: blur(14px);
-        padding: 20px;
-        border-radius: 18px;
-        box-shadow: 0 10px 35px rgba(0,0,0,0.1);
-        margin-bottom: 26px;
-        border: 1px solid rgba(255,255,255,0.4);
+        padding: 22px;
+        border-radius: 20px;
+        box-shadow: 0 10px 35px rgba(0,0,0,0.07);
+        margin-bottom: 28px;
+        border: 1px solid rgba(255,255,255,0.5);
+        position: relative;
+    }
+
+    /* 每张卡片右上角一只小蛤蟆 */
+    .card::after {
+        content: "🐸";
+        position: absolute;
+        top: 12px;
+        right: 18px;
+        font-size: 20px;
+        opacity: 0.8;
     }
 
     .section-title {
         font-size: 18px;
         font-weight: bold;
         margin-bottom: 12px;
-        color: #1e293b;
+        color: #0f172a;
     }
 
     button {
-        background: #3b82f6;
+        background: #22c55e;
         border: none;
         padding: 12px 16px;
-        border-radius: 10px;
+        border-radius: 12px;
         font-size: 15px;
         color: white;
         cursor: pointer;
         transition: 0.2s;
     }
     button:hover {
-        background: #2563eb;
+        background: #16a34a;
     }
 
     textarea {
         width: 100%;
         padding: 12px;
-        border-radius: 12px;
+        border-radius: 14px;
         border: 1px solid #cbd5e1;
         font-size: 15px;
         background: white;
-        margin-top: 10px;
+        box-sizing: border-box;
+        margin-top: 8px;
         min-height:140px;
     }
 
     select {
         width: 100%;
         padding: 10px;
-        border-radius: 10px;
+        border-radius: 12px;
         font-size: 15px;
         border: 1px solid #cbd5e1;
         margin-bottom: 10px;
@@ -102,68 +112,152 @@
         max-width: 100%;
     }
 
-    /* 等级显示卡片 */
+    /* ===== 等级卡片 ===== */
     #level-card {
-        background: white;
-        border-radius: 16px;
-        padding: 18px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-        margin: 15px 0 30px 0;
+        background: rgba(255,255,255,0.85);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+        margin-top: 20px;
     }
 
-    #level-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 6px;
-        color:#1e293b;
-    }
-
-    #percentile-text {
-        margin-top: 6px;
-        font-size: 14px;
-        color:#475569;
-    }
-
-    /* 等级进度条 */
-    .progress-bg {
-        height: 12px;
-        background: #e2e8f0;
-        border-radius: 6px;
-        margin-top: 8px;
-        overflow: hidden;
-    }
     #progress-bar {
         height: 12px;
-        background: linear-gradient(90deg,#60a5fa,#2563eb);
+        background: linear-gradient(90deg,#4ade80,#16a34a);
         width: 0%;
+        border-radius: 6px;
         transition: width 0.5s ease;
     }
 
-    /* 大师思维动画条 */
+    .progress-bg {
+        background:#d1fae5;
+        height:12px;
+        border-radius:6px;
+    }
+
+    /* ===== 思维动画（八要素动态） ===== */
     .thinking-flow {
         display:flex;
         gap:8px;
-        margin-top:12px;
         flex-wrap:wrap;
+        margin-top:10px;
     }
+
     .thinking-step {
         padding:6px 10px;
-        border-radius:6px;
-        background:#e2e8f0;
-        color:#334155;
+        border-radius:8px;
+        background:#bbf7d0;
+        color:#166534;
         font-size:14px;
         opacity:0.4;
         transition:0.3s;
     }
+
     .thinking-step.active {
-        background:#3b82f6;
+        background:#22c55e;
         color:white;
         opacity:1;
         transform:scale(1.08);
     }
+
+    /* ======= 大师卡片（漂亮蛤蟆风） ======= */
+    .master-card {
+        background: rgba(255,255,255,0.7);
+        border-radius:20px;
+        padding:20px;
+        cursor:pointer;
+        box-shadow:0 12px 40px rgba(0,0,0,0.1);
+    }
+
+    .master-header {
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+    }
+
+    .master-title {
+        font-size:18px;
+        font-weight:600;
+        margin-left:8px;
+        color:#0f172a;
+    }
+
+    .master-icon {
+        font-size:26px;
+    }
+
+    .master-arrow {
+        font-size:20px;
+        transition:0.3s;
+    }
+
+    .master-content {
+        display:none;
+        margin-top:20px;
+        line-height:1.65;
+        font-size:15px;
+        color:#1e293b;
+    }
+
+    .master-section {
+        margin-bottom:22px;
+    }
+
+    .master-section-title {
+        font-size:16px;
+        font-weight:bold;
+        margin-bottom:10px;
+        color:#14532d;
+    }
+
+    .master-pill {
+        background:#dcfce7;
+        color:#166534;
+        padding:8px 12px;
+        border-radius:12px;
+        display:inline-block;
+        margin:6px 6px 0 0;
+        font-size:14px;
+    }
+
+    .master-grid {
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:12px;
+    }
+
+    .master-grid-item {
+        background:#f0fdf4;
+        border-radius:14px;
+        padding:12px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.05);
+        font-size:14px;
+    }
+
+    .master-step {
+        margin:10px 0;
+    }
+
+    .master-step span {
+        background:#22c55e;
+        color:white;
+        border-radius:50%;
+        padding:4px 8px;
+        margin-right:8px;
+        font-size:13px;
+    }
+
+    .master-summary {
+        background:#fef9c3;
+        padding:14px;
+        border-radius:12px;
+        color:#92400e;
+        font-size:15px;
+        margin-top:10px;
+    }
+
 </style>
 </head>
-
 <body>
 
 <!-- LOGO Header -->
@@ -172,21 +266,24 @@
     <span>思维冒险者 · 批判性思维训练小游戏</span>
 </header>
 
-<!-- 等级系统卡片 -->
+<!-- ===== 等级系统卡片 ===== -->
 <div class="container">
 <div id="level-card">
     <div id="level-title">等级：加载中...</div>
+
     <div class="progress-bg">
         <div id="progress-bar"></div>
     </div>
+
     <div id="level-exp-text" style="margin-top:6px; color:#475569;">积分：0</div>
     <div id="percentile-text">你超过了全球 0% 的人类</div>
 </div>
 </div>
 
-<!-- 主体内容 -->
+<!-- ===== 主功能区 ===== -->
 <div class="container">
 
+    <!-- 抽元素卡 -->
     <div class="card">
         <div class="section-title">① 抽取今日思维元素卡</div>
         <button onclick="drawElementCard()">抽元素卡</button>
@@ -194,6 +291,7 @@
         <textarea id="elementAnswer" placeholder="在这里写下你的回答..."></textarea>
     </div>
 
+    <!-- 抽标准卡 -->
     <div class="card">
         <div class="section-title">② 抽取今日思维标准卡</div>
         <button onclick="drawStandardCard()">抽标准卡</button>
@@ -214,35 +312,22 @@
         </select>
     </div>
 
+    <!-- 保存记录 -->
     <button onclick="saveToday()">保存今日记录</button>
 
+    <!-- 周统计 -->
     <div class="card">
         <div class="section-title">③ 本周统计（自动计算）</div>
         <pre id="weeklyStats"></pre>
         <button onclick="showWeekly()">刷新统计 & 图表</button>
     </div>
-
-    <div class="card">
-        <div class="section-title">📊 思维要素练习覆盖度</div>
-        <canvas id="elementRadar"></canvas>
-    </div>
-
-    <div class="card">
-        <div class="section-title">📊 思维标准平均分</div>
-        <canvas id="standardRadar"></canvas>
-    </div>
-
-    <div class="card">
-        <div class="section-title">📈 思维阶段趋势</div>
-        <canvas id="stageTrend"></canvas>
-    </div>
-
 </div>
 
-<!-- =============== 大师动画模块 =============== -->
+<!-- ===== 思维动画（八要素流动） ===== -->
 <div class="container">
 <div class="card">
-    <div class="section-title">✨ 大师思维动画（自动展示八要素）</div>
+    <div class="section-title">✨ 大师思维动画（八要素动态流动）</div>
+
     <div class="thinking-flow">
         <div class="thinking-step" id="step-purpose">目的</div>
         <div class="thinking-step" id="step-question">问题</div>
@@ -257,100 +342,263 @@
 </div>
 
 <script>
+/* ========== 思维动画逻辑（八要素轮播） ========== */
 let steps = ["purpose","question","info","concept","assumption","inference","view","impact"];
 let index = 0;
-setInterval(()=>{
-    steps.forEach(s=>{
-        document.getElementById("step-"+s).classList.remove("active");
-    });
+
+setInterval(() => {
+    steps.forEach(s =>
+        document.getElementById("step-"+s).classList.remove("active")
+    );
     document.getElementById("step-"+steps[index]).classList.add("active");
-    index = (index+1)%steps.length;
+    index = (index + 1) % steps.length;
 }, 1800);
 </script>
-
-<!-- =============== 五大大师卡片（折叠模块） =============== -->
-
+<!-- ========= 图表模块：思维要素雷达图 / 标准雷达图 / 阶段趋势区别曲线 ========= -->
 <div class="container">
-<div class="card master-card" onclick="toggleMasterBeautiful('conflict')">
+    <div class="card">
+        <div class="section-title">📊 思维要素练习覆盖度（雷达图）</div>
+        <canvas id="elementRadar"></canvas>
+    </div>
+
+    <div class="card">
+        <div class="section-title">📊 思维标准平均分（雷达图）</div>
+        <canvas id="standardRadar"></canvas>
+    </div>
+
+    <div class="card">
+        <div class="section-title">📈 思维阶段趋势（折线图）</div>
+        <canvas id="stageTrend"></canvas>
+    </div>
+</div>
+
+<script>
+/* ===========================================================
+   图表：计算函数
+=========================================================== */
+
+// 八要素练习次数
+function calcElementFrequency(logs) {
+    const keys = ["目的", "问题", "信息", "概念", "推论", "假设", "视角", "后果"];
+    return {
+        labels: keys,
+        data: keys.map(k => logs.filter(r => r.element === k).length)
+    };
+}
+
+// 九标准平均分
+function calcStandardScores(logs) {
+    const keys = ["清晰", "准确", "精确", "相关", "深刻", "广度", "逻辑", "重要性", "公正"];
+    return {
+        labels: keys,
+        data: keys.map(k => {
+            const match = logs.filter(r => r.standard === k);
+            if (!match.length) return 0;
+            return match.reduce((a, b) => a + b.standardScore, 0) / match.length;
+        })
+    };
+}
+
+// 思维阶段趋势（1挣扎 / 2初学 / 3练习）
+function calcStageTrend(logs) {
+    logs = [...logs].sort((a, b) => new Date(a.date) - new Date(b.date));
+    return {
+        labels: logs.map(r => r.date),
+        values: logs.map(r => {
+            const sc = (r.standardScore + r.honestyScore) / 2;
+            if (sc < 2) return 1;
+            if (sc < 2.5) return 2;
+            return 3;
+        })
+    };
+}
+
+
+/* ===========================================================
+   图表渲染
+=========================================================== */
+
+let elementRadarChart, standardRadarChart, stageTrendChart;
+
+function renderCharts(logs) {
+    const elementData = calcElementFrequency(logs);
+    const standardData = calcStandardScores(logs);
+    const trend = calcStageTrend(logs);
+
+    // 销毁旧图
+    if (elementRadarChart) elementRadarChart.destroy();
+    if (standardRadarChart) standardRadarChart.destroy();
+    if (stageTrendChart) stageTrendChart.destroy();
+
+    // 八要素雷达图
+    elementRadarChart = new Chart(
+        document.getElementById("elementRadar"),
+        {
+            type: 'radar',
+            data: {
+                labels: elementData.labels,
+                datasets: [{
+                    label: "练习次数",
+                    data: elementData.data,
+                    borderColor: "#22c55e",
+                    backgroundColor: "rgba(34,197,94,0.2)"
+                }]
+            }
+        }
+    );
+
+    // 九标准雷达图
+    standardRadarChart = new Chart(
+        document.getElementById("standardRadar"),
+        {
+            type: 'radar',
+            data: {
+                labels: standardData.labels,
+                datasets: [{
+                    label: "平均分",
+                    data: standardData.data,
+                    borderColor: "#3b82f6",
+                    backgroundColor: "rgba(59,130,246,0.2)"
+                }]
+            }
+        }
+    );
+
+    // 阶段趋势折线图
+    stageTrendChart = new Chart(
+        document.getElementById("stageTrend"),
+        {
+            type: 'line',
+            data: {
+                labels: trend.labels,
+                datasets: [{
+                    label: "阶段趋势 (1=挣扎 / 2=初学 / 3=练习)",
+                    data: trend.values,
+                    borderColor: "#f97316",
+                    tension: 0.35,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                scales: {
+                    y: { min: 1, max: 3, ticks: { stepSize: 1 } }
+                }
+            }
+        }
+    );
+}
+
+
+/* ===========================================================
+   周统计 → 渲染图表
+=========================================================== */
+
+function showWeekly() {
+    const logs = JSON.parse(localStorage.getItem("logs") || "[]");
+    const now = Date.now();
+    const oneWeek = 7 * 24 * 3600 * 1000;
+
+    const weekLogs = logs.filter(r => now - new Date(r.date).getTime() < oneWeek);
+    const el = document.getElementById("weeklyStats");
+
+    if (!weekLogs.length) {
+        el.innerText = "本周暂无记录，快去抽一张卡吧～";
+        renderCharts(logs);
+        return;
+    }
+
+    const avg = (arr, key) => arr.reduce((a,b)=>a+b[key],0) / arr.length;
+
+    el.innerText =
+        `本周练习次数：${weekLogs.length}\n` +
+        `平均标准得分：${avg(weekLogs,"standardScore").toFixed(2)}\n` +
+        `平均诚实度：${avg(weekLogs,"honestyScore").toFixed(2)}\n` +
+        `覆盖要素：${[...new Set(weekLogs.map(r=>r.element))].join("，")}\n` +
+        `覆盖标准：${[...new Set(weekLogs.map(r=>r.standard))].join("，")}`;
+
+    // 重新渲染图表
+    renderCharts(logs);
+}
+</script>
+<!-- ===========================
+     🐸 五大大师卡片（蛤蟆主题版）
+     =========================== -->
+
+<!-- ===== 大师卡片 1：处理冲突 ===== -->
+<div class="container">
+<div class="master-card" onclick="toggleMasterBeautiful('conflict')">
 
     <div class="master-header">
-        <div class="master-icon">🧠</div>
+        <div class="master-icon">🐸</div>
         <div class="master-title">大师示范：如何优雅处理冲突？</div>
         <div class="master-arrow" id="arrow-conflict">▼</div>
     </div>
 
     <div id="content-conflict" class="master-content">
 
-        <!-- Section 1 -->
         <div class="master-section">
             <div class="master-section-title">✨ 大师的黄金原则</div>
-
-            <div class="master-pill">不急着回应，而是先理解</div>
-            <div class="master-pill">将“赢输思维”换成“对齐思维”</div>
-            <div class="master-pill">问题不等于人 → 批评观点，不批评人格</div>
+            <div class="master-pill">先理解，再回应</div>
+            <div class="master-pill">冲突是需求的信号，而非战争</div>
+            <div class="master-pill">问题不是“谁错了”，而是“现实是什么”</div>
         </div>
 
-        <!-- Section 2 -->
         <div class="master-section">
-            <div class="master-section-title">📍 大师的冲突工具箱</div>
-
+            <div class="master-section-title">📍 大师工具箱</div>
             <div class="master-grid">
+
                 <div class="master-grid-item">
                     🎯 <b>明确目的</b><br>
-                    我要得到什么？关系 vs 结果？
+                    是为了赢？还是为了理解？
                 </div>
 
                 <div class="master-grid-item">
-                    ❓ <b>定义真正的问题</b><br>
-                    是误解？需求冲突？情绪？价值观？
+                    ❓ <b>定义问题</b><br>
+                    是需求冲突？误解？期待不一致？
                 </div>
 
                 <div class="master-grid-item">
                     👓 <b>换视角</b><br>
-                    我站在对方 / 第三方的眼里看……会怎样？
+                    “如果我是对方，我会怎样理解这件事？”
                 </div>
 
                 <div class="master-grid-item">
-                    🧩 <b>找隐藏假设</b><br>
-                    我是不是想多了？是不是误会？
+                    🧩 <b>找假设</b><br>
+                    我是不是误会了对方意图？
                 </div>
 
                 <div class="master-grid-item">
-                    🧠 <b>九大思维标准</b><br>
-                    清晰、准确、公正、深刻、广度…
+                    🧠 <b>九标准检查</b><br>
+                    我有偏见吗？我忽略重要信息了吗？
                 </div>
+
             </div>
         </div>
 
-        <!-- Section 3 -->
         <div class="master-section">
-            <div class="master-section-title">🔍 大师的处理流程示范</div>
+            <div class="master-section-title">🔍 大师处理流程</div>
 
             <div class="master-step">
-                <span>①</span> 大师会先「确认对方情绪」：  
-                <i>“听起来这件事让你很焦虑，对吗？”</i>
+                <span>①</span> 确认对方情绪：“我听起来你有些焦虑…对吗？”
             </div>
 
             <div class="master-step">
-                <span>②</span> 然后「确认对方需求」：  
-                <i>“你是希望事情更明确一些？”</i>
+                <span>②</span> 确认需求：“你需要更明确的说明和期待？”
             </div>
 
             <div class="master-step">
-                <span>③</span> 再表达自己的需求：  
-                <i>“我需要更多背景才能判断下一步。”</i>
+                <span>③</span> 表达自己需求：“我想了解你在意的点。”
             </div>
 
             <div class="master-step">
-                <span>④</span> 最后一起找解决方案：  
-                <i>“我们能不能设一个双方都能接受的流程？”</i>
+                <span>④</span> 一起找方案：“我们能否找一个双方都能接受的路径？”
             </div>
         </div>
 
-        <!-- End -->
         <div class="master-summary">
-            🌈 <b>大师总结：</b>  
-            **冲突不是“输赢”，而是“看见彼此 → 对齐现实 → 一起变好”。**
+            🌈 <b>大师总结：</b><br>
+            冲突不是输赢，而是：  
+            **看见真实 → 对齐需求 → 一起让现实变好。**
         </div>
 
     </div>
@@ -358,14 +606,260 @@ setInterval(()=>{
 </div>
 
 
-<!-- =============== 折叠 JS =============== -->
+<!-- ===== 大师卡片 2：看情绪 ===== -->
+<div class="container">
+<div class="master-card" onclick="toggleMasterBeautiful('emotion')">
+
+    <div class="master-header">
+        <div class="master-icon">🐸</div>
+        <div class="master-title">大师示范：如何理解情绪？</div>
+        <div class="master-arrow" id="arrow-emotion">▼</div>
+    </div>
+
+    <div id="content-emotion" class="master-content">
+
+        <div class="master-section">
+            <div class="master-section-title">✨ 大师的黄金原则</div>
+            <div class="master-pill">情绪不是敌人，是信号</div>
+            <div class="master-pill">情绪 = 信息 × 解释</div>
+            <div class="master-pill">让情绪提示思维，而不是主导思维</div>
+        </div>
+
+        <div class="master-section">
+            <div class="master-section-title">📍 情绪的结构</div>
+            <div class="master-grid">
+
+                <div class="master-grid-item">
+                    🎯 刺激  
+                    “发生了什么？”
+                </div>
+
+                <div class="master-grid-item">
+                    🧩 自动想法  
+                    “我怎么解释它？”
+                </div>
+
+                <div class="master-grid-item">
+                    ❤️ 需要  
+                    “什么需求被触发？”
+                </div>
+
+                <div class="master-grid-item">
+                    👓 重新解读  
+                    “如果我不是这样解释，会怎样？”
+                </div>
+
+            </div>
+        </div>
+
+        <div class="master-section">
+            <div class="master-section-title">🔍 大师如何处理情绪</div>
+            <div class="master-step">
+                <span>①</span> 觉察情绪：“我现在在生气/焦虑/难过。”
+            </div>
+            <div class="master-step">
+                <span>②</span> 找自动想法：“为什么？我在想什么？”
+            </div>
+            <div class="master-step">
+                <span>③</span> 检查解释是否准确。
+            </div>
+            <div class="master-step">
+                <span>④</span> 找到核心需求，并满足它。
+            </div>
+        </div>
+
+        <div class="master-summary">
+            🌈 <b>大师总结：</b><br>
+            大师不是没有情绪，  
+            而是：**能看懂情绪在说什么。**
+        </div>
+
+    </div>
+</div>
+</div>
+
+
+<!-- ===== 大师卡片 3：做重要决定 ===== -->
+<div class="container">
+<div class="master-card" onclick="toggleMasterBeautiful('decision')">
+
+    <div class="master-header">
+        <div class="master-icon">🐸</div>
+        <div class="master-title">大师示范：如何做重要决定？</div>
+        <div class="master-arrow" id="arrow-decision">▼</div>
+    </div>
+
+    <div id="content-decision" class="master-content">
+
+        <div class="master-section">
+            <div class="master-section-title">✨ 大师的黄金原则</div>
+            <div class="master-pill">目的必须清晰</div>
+            <div class="master-pill">大决定 = 多子问题构成</div>
+            <div class="master-pill">不做的代价也要算</div>
+        </div>
+
+        <div class="master-section">
+            <div class="master-section-title">📍 决策工具箱</div>
+
+            <div class="master-grid">
+
+                <div class="master-grid-item">
+                    🎯 <b>目的</b><br>
+                    “我真正要实现的是什么？”
+                </div>
+
+                <div class="master-grid-item">
+                    ❓ <b>核心问题</b><br>
+                    我把问题拆开了吗？
+                </div>
+
+                <div class="master-grid-item">
+                    📚 <b>信息</b><br>
+                    已知 vs 未知 vs 不知道自己不知道的
+                </div>
+
+                <div class="master-grid-item">
+                    🧩 <b>假设</b><br>
+                    “如果我错了，会怎样？”
+                </div>
+
+                <div class="master-grid-item">
+                    👓 <b>视角</b><br>
+                    未来五年的自己怎么看？
+                </div>
+
+            </div>
+        </div>
+
+        <div class="master-summary">
+            🌈 <b>大师总结：</b><br>
+            重要决定不是选“最好的”，  
+            而是选：**未来最不后悔的。**
+        </div>
+
+    </div>
+</div>
+</div>
+
+
+<!-- ===== 大师卡片 4：判断信息真假 ===== -->
+<div class="container">
+<div class="master-card" onclick="toggleMasterBeautiful('truth')">
+
+    <div class="master-header">
+        <div class="master-icon">🐸</div>
+        <div class="master-title">大师示范：如何判断信息真假？</div>
+        <div class="master-arrow" id="arrow-truth">▼</div>
+    </div>
+
+    <div id="content-truth" class="master-content">
+
+        <div class="master-section">
+            <div class="master-section-title">✨ 大师的黄金原则</div>
+            <div class="master-pill">寻找“真相”，而非“自我肯定”</div>
+            <div class="master-pill">主动找反证</div>
+            <div class="master-pill">证据比观点更重要</div>
+        </div>
+
+        <div class="master-section">
+            <div class="master-grid">
+
+                <div class="master-grid-item">
+                    📚 <b>来源可靠？</b>
+                </div>
+
+                <div class="master-grid-item">
+                    🧠 <b>证据充分？</b>
+                </div>
+
+                <div class="master-grid-item">
+                    🔗 <b>逻辑一致？</b>
+                </div>
+
+                <div class="master-grid-item">
+                    ❓ <b>能否被证伪？</b>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="master-summary">
+            🌈 <b>大师总结：</b><br>
+            大师不是更聪明，  
+            而是：**更愿意检验自己的信念。**
+        </div>
+
+    </div>
+</div>
+</div>
+
+
+<!-- ===== 大师卡片 5：如何学习 ===== -->
+<div class="container">
+<div class="master-card" onclick="toggleMasterBeautiful('learning')">
+
+    <div class="master-header">
+        <div class="master-icon">🐸</div>
+        <div class="master-title">大师示范：如何学习？</div>
+        <div class="master-arrow" id="arrow-learning">▼</div>
+    </div>
+
+    <div id="content-learning" class="master-content">
+
+        <div class="master-section">
+            <div class="master-section-title">✨ 大师的黄金原则</div>
+            <div class="master-pill">理解结构胜过死记硬背</div>
+            <div class="master-pill">找关键概念、关键变量</div>
+            <div class="master-pill">把知识“应用”到生活</div>
+        </div>
+
+        <div class="master-section">
+            <div class="master-grid">
+
+                <div class="master-grid-item">
+                    🎯 <b>学习目的</b><br>
+                    为了改变思维方式，而不是记住段落。
+                </div>
+
+                <div class="master-grid-item">
+                    📚 <b>知识结构</b><br>
+                    抓住本质、原理、模型。
+                </div>
+
+                <div class="master-grid-item">
+                    🧩 <b>假设检查</b><br>
+                    “我以为我懂了，但真的懂了吗？”
+                </div>
+
+                <div class="master-grid-item">
+                    👓 <b>视角转换</b><br>
+                    新知识与人生目标的关系是什么？
+                </div>
+
+            </div>
+        </div>
+
+        <div class="master-summary">
+            🌈 <b>大师总结：</b><br>
+            大师的学习秘诀：  
+            **理解结构 → 应用 → 再理解 → 再应用。**
+        </div>
+
+    </div>
+</div>
+</div>
+
+<!-- ======== 折叠 JS ======== -->
 <script>
-function toggleMasterCard(id){
-    const el = document.getElementById("master-"+id);
-    el.style.display = el.style.display === "none" ? "block" : "none";
+function toggleMasterBeautiful(id){
+    const content = document.getElementById("content-"+id);
+    const arrow = document.getElementById("arrow-"+id);
+    const open = content.style.display === "block";
+
+    content.style.display = open ? "none" : "block";
+    arrow.style.transform = open ? "rotate(0deg)" : "rotate(180deg)";
 }
 </script>
 
-<!-- ===== 最终结束 Body 和 HTML ===== -->
 </body>
 </html>
