@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>思维冒险者 · 思维训练小游戏</title>
 
-<!-- 引入 Chart.js（用来画雷达图、折线图） -->
+<!-- 引入 Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <!-- ====== STYLE ====== -->
@@ -18,11 +18,23 @@
     }
 
     header {
-        padding: 20px;
-        background: #222;
-        color: white;
-        text-align: center;
-        font-size: 20px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:12px;
+        padding: 15px 0;
+        background:#222;
+    }
+
+    header img {
+        height:48px;
+        width:auto;
+        border-radius:8px;
+    }
+
+    header span {
+        font-size:20px;
+        color:white;
     }
 
     .container {
@@ -93,7 +105,12 @@
 
 <body>
 
-<header>思维冒险者 · 批判性思维训练小游戏</header>
+<!-- ====== HEADER（含 LOGO） ====== -->
+<header>
+    <img src="ChatGPT Image 2025年11月17日 17_47_21.png" alt="logo">
+    <span>思维冒险者 · 批判性思维训练小游戏</span>
+</header>
+
 <div class="container">
 
     <!-- 抽卡区：思维要素 -->
@@ -108,7 +125,7 @@
     <!-- 抽卡区：思维标准 -->
     <div class="card">
         <div class="section-title">② 抽取今日思维标准卡</div>
-        <button onclick="drawStandardCard()">抽标准Card</button>
+        <button onclick="drawStandardCard()">抽标准卡</button>
         <p id="standardCard" style="font-size:16px; white-space:pre-wrap;"></p>
 
         <div class="section-title">为该标准打分（1–3 分）</div>
@@ -126,10 +143,9 @@
         </select>
     </div>
 
-    <!-- 保存 -->
     <button onclick="saveToday()">保存今日记录</button>
 
-    <!-- 周统计（文字） -->
+    <!-- 周统计 -->
     <div class="card">
         <div class="section-title">③ 本周统计（自动计算）</div>
         <p id="weeklyStats"></p>
@@ -158,7 +174,7 @@
 
 <!-- ====== SCRIPT ====== -->
 <script>
-/* ---- 元素卡（基于思维八要素） ---- */
+/* ---- 元素卡 ---- */
 const elementCards = [
     {key:"目的", text:"【目的卡】写下你正在关注的一件事：你的真正目的是什么？表面目的是？"},
     {key:"问题", text:"【问题卡】把你正在纠结的一件事，改写成一个清晰的问题句。"},
@@ -170,7 +186,7 @@ const elementCards = [
     {key:"后果", text:"【后果卡】写出你某个决定的：1 个短期后果 + 1 个长期后果。"},
 ];
 
-/* ---- 标准卡（九大思维标准） ---- */
+/* ---- 标准卡 ---- */
 const standardCards = [
     {key:"清晰", text:"【清晰卡】你的表达是否让陌生人也能准确理解？"},
     {key:"准确", text:"【准确卡】哪些内容是可验证的事实？有没有可能错的地方？"},
@@ -183,7 +199,7 @@ const standardCards = [
     {key:"公正", text:"【公正卡】你是否用同样标准评判自己和他人？"},
 ];
 
-/* ---- 抽卡函数 ---- */
+/* ---- 抽卡 ---- */
 function drawElementCard() {
     const card = elementCards[Math.floor(Math.random()*elementCards.length)];
     document.getElementById("elementCard").innerText = card.text;
@@ -196,7 +212,7 @@ function drawStandardCard() {
     localStorage.setItem("today_standard", JSON.stringify(card));
 }
 
-/* ---- 保存今日记录 ---- */
+/* ---- 保存 ---- */
 function saveToday() {
     const element = JSON.parse(localStorage.getItem("today_element"));
     const standard = JSON.parse(localStorage.getItem("today_standard"));
@@ -226,7 +242,7 @@ function saveToday() {
     alert("今日记录已保存！");
 }
 
-/* ---- 文字版周统计 + 触发图表渲染 ---- */
+/* ---- 周统计 ---- */
 function showWeekly() {
     const logs = JSON.parse(localStorage.getItem("logs") || "[]");
     const now = Date.now();
@@ -237,7 +253,7 @@ function showWeekly() {
 
     if (weekLogs.length === 0){
         weeklyStatsEl.innerText = "本周还没有记录。先去抽一张卡试试吧～";
-        renderCharts(logs); // 即便本周没记录，也可以看整体趋势
+        renderCharts(logs);
         return;
     }
 
@@ -252,24 +268,16 @@ function showWeekly() {
 
     weeklyStatsEl.innerText = msg;
 
-    // 用全部历史记录渲染雷达图和趋势图
     renderCharts(logs);
 }
 
-/* ================== 图表部分 ================== */
-
-let elementRadarChart = null;
-let standardRadarChart = null;
-let stageTrendChart = null;
-
-// 1. 八要素练习次数
+/* ---- 图表计算 ---- */
 function calcElementFrequency(logs) {
     const elements = ["目的","问题","信息","概念","推论","假设","视角","后果"];
     const freq = elements.map(el => logs.filter(r => r.element === el).length);
     return { labels: elements, data: freq };
 }
 
-// 2. 九大标准平均分
 function calcStandardScores(logs) {
     const standards = ["清晰","准确","精确","相关","深刻","广度","逻辑","重要性","公正"];
     const data = standards.map(st => {
@@ -280,36 +288,34 @@ function calcStandardScores(logs) {
     return { labels: standards, data };
 }
 
-// 3. 思维阶段趋势（1 挣扎 / 2 初学 / 3 练习）
 function calcStageTrend(logs) {
     const sorted = [...logs].sort((a,b)=> new Date(a.date) - new Date(b.date));
     const labels = sorted.map(r => r.date);
     const values = sorted.map(r => {
         const score = (r.standardScore + r.honestyScore) / 2;
-        if (score < 2) return 1;       // 挣扎期
-        if (score < 2.5) return 2;     // 初学期
-        return 3;                      // 练习期
+        if (score < 2) return 1;
+        if (score < 2.5) return 2;
+        return 3;
     });
     return { labels, values };
 }
 
-// 渲染 / 更新图表
+/* ---- 图表渲染 ---- */
+let elementRadarChart = null;
+let standardRadarChart = null;
+let stageTrendChart = null;
+
 function renderCharts(logs) {
-    if (!logs || logs.length === 0) {
-        // 没有任何记录时，不画图
-        return;
-    }
+    if (!logs || logs.length === 0) return;
 
     const elementCtx = document.getElementById("elementRadar");
     const standardCtx = document.getElementById("standardRadar");
     const stageCtx = document.getElementById("stageTrend");
-    if (!elementCtx || !standardCtx || !stageCtx) return;
 
     const elementData = calcElementFrequency(logs);
     const standardData = calcStandardScores(logs);
     const stageData = calcStageTrend(logs);
 
-    // 如果之前画过图，先销毁，避免重复叠加
     if (elementRadarChart) elementRadarChart.destroy();
     if (standardRadarChart) standardRadarChart.destroy();
     if (stageTrendChart) stageTrendChart.destroy();
@@ -359,9 +365,7 @@ function renderCharts(logs) {
                 y: {
                     min: 1,
                     max: 3,
-                    ticks: {
-                        stepSize: 1
-                    }
+                    ticks: { stepSize: 1 }
                 }
             }
         }
