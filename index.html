@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>思维冒险者 · 思维训练小游戏</title>
+
+<!-- 引入 Chart.js（用来画雷达图、折线图） -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- ====== STYLE ====== -->
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: #f8f8f8;
+    }
+
+    header {
+        padding: 20px;
+        background: #222;
+        color: white;
+        text-align: center;
+        font-size: 20px;
+    }
+
+    .container {
+        padding: 20px;
+        max-width: 680px;
+        margin: 0 auto;
+    }
+
+    button {
+        padding: 12px 18px;
+        border: none;
+        background: #3a5dd0;
+        color: white;
+        font-size: 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 10px 0;
+    }
+
+    button:hover {
+        opacity: 0.9;
+    }
+
+    textarea {
+        width: 100%;
+        padding: 10px;
+        min-height: 130px;
+        margin-top: 10px;
+        font-size: 15px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        box-sizing: border-box;
+    }
+
+    .card {
+        padding: 16px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 17px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    select {
+        padding: 8px;
+        border-radius: 6px;
+        font-size: 15px;
+        border: 1px solid #ddd;
+    }
+
+    #weeklyStats {
+        white-space: pre-wrap;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    canvas {
+        max-width: 100%;
+    }
+</style>
+</head>
+
+<body>
+
+<header>思维冒险者 · 批判性思维训练小游戏</header>
+<div class="container">
+
+    <!-- 抽卡区：思维要素 -->
+    <div class="card">
+        <div class="section-title">① 抽取今日思维元素卡</div>
+        <button onclick="drawElementCard()">抽元素卡</button>
+        <p id="elementCard" style="font-size:16px; white-space:pre-wrap;"></p>
+
+        <textarea id="elementAnswer" placeholder="在这里写下你的回答..."></textarea>
+    </div>
+
+    <!-- 抽卡区：思维标准 -->
+    <div class="card">
+        <div class="section-title">② 抽取今日思维标准卡</div>
+        <button onclick="drawStandardCard()">抽标准Card</button>
+        <p id="standardCard" style="font-size:16px; white-space:pre-wrap;"></p>
+
+        <div class="section-title">为该标准打分（1–3 分）</div>
+        <select id="standardScore">
+            <option value="1">1 分</option>
+            <option value="2">2 分</option>
+            <option value="3">3 分</option>
+        </select>
+
+        <div class="section-title">诚实度打分（1–3 分）</div>
+        <select id="honestyScore">
+            <option value="1">1 分</option>
+            <option value="2">2 分</option>
+            <option value="3">3 分</option>
+        </select>
+    </div>
+
+    <!-- 保存 -->
+    <button onclick="saveToday()">保存今日记录</button>
+
+    <!-- 周统计（文字） -->
+    <div class="card">
+        <div class="section-title">③ 本周统计（自动计算）</div>
+        <p id="weeklyStats"></p>
+        <button onclick="showWeekly()">刷新统计 & 图表</button>
+    </div>
+
+    <!-- 图表：八要素雷达 -->
+    <div class="card">
+        <div class="section-title">📊 思维要素练习覆盖度（雷达图）</div>
+        <canvas id="elementRadar"></canvas>
+    </div>
+
+    <!-- 图表：九标准雷达 -->
+    <div class="card">
+        <div class="section-title">📊 思维标准平均分（雷达图）</div>
+        <canvas id="standardRadar"></canvas>
+    </div>
+
+    <!-- 图表：阶段趋势折线 -->
+    <div class="card">
+        <div class="section-title">📈 思维阶段趋势（折线图）</div>
+        <canvas id="stageTrend"></canvas>
+    </div>
+
+</div>
+
+<!-- ====== SCRIPT ====== -->
+<script>
+/* ---- 元素卡（基于思维八要素） ---- */
+const elementCards = [
+    {key:"目的", text:"【目的卡】写下你正在关注的一件事：你的真正目的是什么？表面目的是？"},
+    {key:"问题", text:"【问题卡】把你正在纠结的一件事，改写成一个清晰的问题句。"},
+    {key:"信息", text:"【信息卡】写出与该问题相关的：3 个事实 + 3 个猜测，并标清。"},
+    {key:"概念", text:"【概念卡】选一个抽象词（如自由/成功/安全），写出你现在的定义。"},
+    {key:"推论", text:"【推论卡】写一个你最近得出的结论，并列出 2–3 个支持它的理由。"},
+    {key:"假设", text:"【假设卡】写出你在这个话题中的“想当然”假设，并问：如果这是错的呢？"},
+    {key:"视角", text:"【视角卡】从与你立场相反的人的视角，写 2 句话看待同一件事。"},
+    {key:"后果", text:"【后果卡】写出你某个决定的：1 个短期后果 + 1 个长期后果。"},
+];
+
+/* ---- 标准卡（九大思维标准） ---- */
+const standardCards = [
+    {key:"清晰", text:"【清晰卡】你的表达是否让陌生人也能准确理解？"},
+    {key:"准确", text:"【准确卡】哪些内容是可验证的事实？有没有可能错的地方？"},
+    {key:"精确", text:"【精确卡】是否可以用更具体的数字、例子或情境来说明？"},
+    {key:"相关", text:"【相关卡】你写的每一句话，都紧扣同一个核心问题吗？"},
+    {key:"深刻", text:"【深刻卡】你是否触到这件事更深一层的矛盾或困难？"},
+    {key:"广度", text:"【广度卡】如果你必须站在相反立场思考，会怎么重写？"},
+    {key:"逻辑", text:"【逻辑卡】你的理由和结论之间是否前后一致、没有矛盾？"},
+    {key:"重要性", text:"【重要性卡】你关注的是最关键的部分，还是一些枝节？"},
+    {key:"公正", text:"【公正卡】你是否用同样标准评判自己和他人？"},
+];
+
+/* ---- 抽卡函数 ---- */
+function drawElementCard() {
+    const card = elementCards[Math.floor(Math.random()*elementCards.length)];
+    document.getElementById("elementCard").innerText = card.text;
+    localStorage.setItem("today_element", JSON.stringify(card));
+}
+
+function drawStandardCard() {
+    const card = standardCards[Math.floor(Math.random()*standardCards.length)];
+    document.getElementById("standardCard").innerText = card.text;
+    localStorage.setItem("today_standard", JSON.stringify(card));
+}
+
+/* ---- 保存今日记录 ---- */
+function saveToday() {
+    const element = JSON.parse(localStorage.getItem("today_element"));
+    const standard = JSON.parse(localStorage.getItem("today_standard"));
+    if(!element || !standard) {
+        alert("请先抽元素卡和标准卡，再保存。");
+        return;
+    }
+
+    const text = document.getElementById("elementAnswer").value.trim();
+    if (!text) {
+        if (!confirm("你还没有写任何内容，确定也要保存吗？")) return;
+    }
+
+    const record = {
+        date: new Date().toISOString().slice(0,10),
+        element: element.key,
+        standard: standard.key,
+        text: text,
+        standardScore: parseInt(document.getElementById("standardScore").value),
+        honestyScore: parseInt(document.getElementById("honestyScore").value),
+    };
+
+    let logs = JSON.parse(localStorage.getItem("logs") || "[]");
+    logs.push(record);
+    localStorage.setItem("logs", JSON.stringify(logs));
+
+    alert("今日记录已保存！");
+}
+
+/* ---- 文字版周统计 + 触发图表渲染 ---- */
+function showWeekly() {
+    const logs = JSON.parse(localStorage.getItem("logs") || "[]");
+    const now = Date.now();
+    const oneWeek = 7 * 24 * 3600 * 1000;
+
+    const weekLogs = logs.filter(r => now - new Date(r.date).getTime() < oneWeek);
+    const weeklyStatsEl = document.getElementById("weeklyStats");
+
+    if (weekLogs.length === 0){
+        weeklyStatsEl.innerText = "本周还没有记录。先去抽一张卡试试吧～";
+        renderCharts(logs); // 即便本周没记录，也可以看整体趋势
+        return;
+    }
+
+    const avg = (arr, key) => arr.reduce((a,b)=>a+b[key],0) / arr.length;
+
+    const msg =
+        `本周练习次数：${weekLogs.length}\n` +
+        `平均标准得分：${avg(weekLogs,"standardScore").toFixed(2)}\n` +
+        `平均诚实度：${avg(weekLogs,"honestyScore").toFixed(2)}\n` +
+        `覆盖的思维要素：${[...new Set(weekLogs.map(r=>r.element))].join("，")}\n` +
+        `覆盖的思维标准：${[...new Set(weekLogs.map(r=>r.standard))].join("，")}`;
+
+    weeklyStatsEl.innerText = msg;
+
+    // 用全部历史记录渲染雷达图和趋势图
+    renderCharts(logs);
+}
+
+/* ================== 图表部分 ================== */
+
+let elementRadarChart = null;
+let standardRadarChart = null;
+let stageTrendChart = null;
+
+// 1. 八要素练习次数
+function calcElementFrequency(logs) {
+    const elements = ["目的","问题","信息","概念","推论","假设","视角","后果"];
+    const freq = elements.map(el => logs.filter(r => r.element === el).length);
+    return { labels: elements, data: freq };
+}
+
+// 2. 九大标准平均分
+function calcStandardScores(logs) {
+    const standards = ["清晰","准确","精确","相关","深刻","广度","逻辑","重要性","公正"];
+    const data = standards.map(st => {
+        const filtered = logs.filter(r => r.standard === st);
+        if (filtered.length === 0) return 0;
+        return filtered.reduce((a,b)=>a+b.standardScore,0) / filtered.length;
+    });
+    return { labels: standards, data };
+}
+
+// 3. 思维阶段趋势（1 挣扎 / 2 初学 / 3 练习）
+function calcStageTrend(logs) {
+    const sorted = [...logs].sort((a,b)=> new Date(a.date) - new Date(b.date));
+    const labels = sorted.map(r => r.date);
+    const values = sorted.map(r => {
+        const score = (r.standardScore + r.honestyScore) / 2;
+        if (score < 2) return 1;       // 挣扎期
+        if (score < 2.5) return 2;     // 初学期
+        return 3;                      // 练习期
+    });
+    return { labels, values };
+}
+
+// 渲染 / 更新图表
+function renderCharts(logs) {
+    if (!logs || logs.length === 0) {
+        // 没有任何记录时，不画图
+        return;
+    }
+
+    const elementCtx = document.getElementById("elementRadar");
+    const standardCtx = document.getElementById("standardRadar");
+    const stageCtx = document.getElementById("stageTrend");
+    if (!elementCtx || !standardCtx || !stageCtx) return;
+
+    const elementData = calcElementFrequency(logs);
+    const standardData = calcStandardScores(logs);
+    const stageData = calcStageTrend(logs);
+
+    // 如果之前画过图，先销毁，避免重复叠加
+    if (elementRadarChart) elementRadarChart.destroy();
+    if (standardRadarChart) standardRadarChart.destroy();
+    if (stageTrendChart) stageTrendChart.destroy();
+
+    elementRadarChart = new Chart(elementCtx, {
+        type: 'radar',
+        data: {
+            labels: elementData.labels,
+            datasets: [{
+                label: '练习次数',
+                data: elementData.data,
+                fill: true,
+                borderColor: "#3a5dd0",
+                backgroundColor: "rgba(58,93,208,0.2)"
+            }]
+        }
+    });
+
+    standardRadarChart = new Chart(standardCtx, {
+        type: 'radar',
+        data: {
+            labels: standardData.labels,
+            datasets: [{
+                label: '平均分',
+                data: standardData.data,
+                fill: true,
+                borderColor: "#da4453",
+                backgroundColor: "rgba(218,68,83,0.2)"
+            }]
+        }
+    });
+
+    stageTrendChart = new Chart(stageCtx, {
+        type: 'line',
+        data: {
+            labels: stageData.labels,
+            datasets: [{
+                label: "阶段（1=挣扎，2=初学，3=练习）",
+                data: stageData.values,
+                borderColor: "#27ae60",
+                pointRadius: 3,
+                tension: 0.3
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    min: 1,
+                    max: 3,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
+
+</body>
+</html>
