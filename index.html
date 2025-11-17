@@ -342,7 +342,7 @@
 </div>
 
 <script>
-/* ========== 思维动画逻辑（八要素轮播） ========== */
+/* ========== 大师思维动画逻辑 ========== */
 let steps = ["purpose","question","info","concept","assumption","inference","view","impact"];
 let index = 0;
 
@@ -519,6 +519,19 @@ function showWeekly() {
     // 重新渲染图表
     renderCharts(logs);
 }
+<script>
+function toggleWeeklyReport(){
+    const el = document.getElementById("weekly-report-content");
+    const arrow = document.getElementById("weekly-arrow");
+    const open = el.style.display === "block";
+
+    el.style.display = open ? "none" : "block";
+    arrow.style.transform = open ? "rotate(0deg)" : "rotate(180deg)";
+
+    if (!open) generateWeeklyReport();
+}
+</script>
+
 </script>
 <!-- ===========================
      🐸 五大大师卡片（蛤蟆主题版）
@@ -599,6 +612,34 @@ function showWeekly() {
             🌈 <b>大师总结：</b><br>
             冲突不是输赢，而是：  
             **看见真实 → 对齐需求 → 一起让现实变好。**
+        </div>
+
+    </div>
+</div>
+</div>
+<!-- ===========================
+     🐸 每周思维成长报告（可折叠）
+     =========================== -->
+<div class="container">
+<div class="master-card" onclick="toggleWeeklyReport()" style="cursor:pointer;">
+
+    <div class="master-header">
+        <div class="master-icon">📅</div>
+        <div class="master-title">每周思维成长报告（点击展开）</div>
+        <div class="master-arrow" id="weekly-arrow">▼</div>
+    </div>
+
+    <div id="weekly-report-content" class="master-content">
+
+        <div id="weekly-report-box" style="
+            background:rgba(255,255,255,0.7);
+            padding:20px;
+            border-radius:16px;
+            box-shadow:0 4px 15px rgba(0,0,0,0.1);
+            margin-top:16px;
+            line-height:1.7;
+        ">
+            <!-- JS 会自动填入报告 -->
         </div>
 
     </div>
