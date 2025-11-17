@@ -624,39 +624,42 @@ function toggleHistory(){
 }
 </script>
 
+<!-- ===========================
+     📌 第 8 段：全站 JS（最终正确版）
+     =========================== -->
+
 <script>
+
 /* ===========================================================
    🎴 抽卡数据源（元素卡 & 标准卡）
 =========================================================== */
-
 const elementCards = [
     {key:"目的", text:"【目的卡】今天你真正的目的是什么？表面目的是什么？"},
     {key:"问题", text:"【问题卡】把你纠结的一件事改写成一个清晰的问题句。"},
     {key:"信息", text:"【信息卡】写出 3 条事实 + 3 条推测，并标记清楚。"},
-    {key:"概念", text:"【概念卡】写下你对一个核心概念的定义，比如自由 / 成就 / 安全。"},
-    {key:"推论", text:"【推论卡】写下你最近得出的一个结论，以及 2–3 条支持理由。"},
-    {key:"假设", text:"【假设卡】写下你正在默认成立的想法，并问：如果这是错的呢？"},
-    {key:"视角", text:"【视角卡】从与你立场相反的角度，写 2 句话看这件事。"},
-    {key:"后果", text:"【后果卡】写出你某个决定的短期后果 + 长期后果。"}
+    {key:"概念", text:"【概念卡】写下一个抽象词的定义，如自由 / 安全 / 成就。"},
+    {key:"推论", text:"【推论卡】写下你得出的一个结论以及 2–3 个理由。"},
+    {key:"假设", text:"【假设卡】写下你正在默认成立的东西：如果它是错的呢？"},
+    {key:"视角", text:"【视角卡】从反方视角写 2 句话看这件事。"},
+    {key:"后果", text:"【后果卡】写出一个决定的短期后果 + 长期后果。"}
 ];
 
 const standardCards = [
-    {key:"清晰", text:"【清晰卡】你的表达是否足够容易理解？"},
-    {key:"准确", text:"【准确卡】哪些内容是事实？是否存在错误？"},
-    {key:"精确", text:"【精确卡】可以更具体吗？数字、例子？"},
-    {key:"相关", text:"【相关卡】你写的每一句话是否紧扣核心问题？"},
-    {key:"深刻", text:"【深刻卡】你是否触及更深处的矛盾或根源？"},
-    {key:"广度", text:"【广度卡】从反方视角会怎么说？"},
-    {key:"逻辑", text:"【逻辑卡】理由与结论是否一致？"},
-    {key:"重要性", text:"【重要性卡】你关注的是关键点吗？"},
-    {key:"公正", text:"【公正卡】有带入偏见吗？你对自己和他人一致吗？"}
+    {key:"清晰", text:"【清晰卡】你的表达是否容易理解？"},
+    {key:"准确", text:"【准确卡】哪些是事实？哪些可能错误？"},
+    {key:"精确", text:"【精确卡】能否用数字/例子更具体？"},
+    {key:"相关", text:"【相关卡】是否紧扣核心问题？"},
+    {key:"深刻", text:"【深刻卡】是否触及更深一层？"},
+    {key:"广度", text:"【广度卡】反方会怎么写？"},
+    {key:"逻辑", text:"【逻辑卡】理由是否支持结论？"},
+    {key:"重要性", text:"【重要性卡】关注的是关键点吗？"},
+    {key:"公正", text:"【公正卡】是否带偏见？"}
 ];
 
 
 /* ===========================================================
-   🎴 抽卡翻牌动画（元素卡 & 标准卡）
+   🎴 抽卡翻牌动画
 =========================================================== */
-
 function drawElementCard() {
     const card = elementCards[Math.floor(Math.random()*elementCards.length)];
     document.getElementById("elementCard").innerText = card.text;
@@ -667,40 +670,6 @@ function drawElementCard() {
     setTimeout(()=> flip.classList.remove("flip"), 700);
 }
 
-    
-
-    /* ===== 水彩翻牌动画 ===== */
-.flip-card {
-  perspective: 1000px;
-  width: 100%;
-  margin-top: 12px;
-}
-.flip-card-inner {
-  width: 100%;
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
-}
-.flip-card.flip .flip-card-inner {
-  transform: rotateY(180deg);
-}
-
-.flip-front,
-.flip-back {
-  backface-visibility: hidden;
-  border-radius: 16px;
-  padding: 18px;
-  min-height: 80px;
-  font-size: 15px;
-  line-height: 1.6;
-  border: 1px solid #dadada;
-  background: #fefae0; /* 柔黄水彩卡背 */
-}
-
-.flip-back {
-  background: white;
-  transform: rotateY(180deg);
-}
-    
 function drawStandardCard() {
     const card = standardCards[Math.floor(Math.random()*standardCards.length)];
     document.getElementById("standardCard").innerText = card.text;
@@ -712,11 +681,9 @@ function drawStandardCard() {
 }
 
 
-
 /* ===========================================================
-   🧬 等级系统（EXP & Level）
+   🧬 等级系统（exp & level）
 =========================================================== */
-
 const LEVELS = [
     { level: 1, name: "思维萌芽 Seedling", min: 0, max: 99, percentile: 20 },
     { level: 2, name: "思维观察者 Observer", min: 100, max: 249, percentile: 35 },
@@ -727,46 +694,36 @@ const LEVELS = [
     { level: 7, name: "思维大师 Master", min: 2500, max: 999999, percentile: 99 }
 ];
 
-function calculateEXP(record){
-    return (record.standardScore + record.honestyScore) * 5;
-}
-
-function getTotalEXP(logs){
-    return logs.reduce((sum, r)=> sum + calculateEXP(r), 0);
-}
-
-function getLevel(total){
-    return LEVELS.find(lv => total>=lv.min && total<=lv.max);
-}
-
-function getNextEXP(level){
-    return level.level===7 ? level.max : LEVELS[level.level].min;
-}
+function calculateEXP(r){ return (r.standardScore + r.honestyScore) * 5; }
+function getTotalEXP(logs){ return logs.reduce((s,r)=>s+calculateEXP(r),0); }
+function getLevel(total){ return LEVELS.find(l=>total>=l.min && total<=l.max); }
+function getNextEXP(level){ return level.level===7 ? level.max : LEVELS[level.level].min; }
 
 function updateLevelUI(){
     const logs = JSON.parse(localStorage.getItem("logs") || "[]");
+
     const total = getTotalEXP(logs);
-    const level = getLevel(total);
-    const next = getNextEXP(level);
-    const percent = Math.min((total - level.min) / (next - level.min), 1) * 100;
+    const lv = getLevel(total);
+    const next = getNextEXP(lv);
+    const pct = Math.min((total - lv.min) / (next - lv.min), 1) * 100;
 
     document.getElementById("level-title").innerText =
-        `等级 Lv.${level.level}：${level.name}`;
+        `等级 Lv.${lv.level}：${lv.name}`;
 
     document.getElementById("level-exp-text").innerText =
         `积分：${total} / ${next}`;
 
-    document.getElementById("progress-bar").style.width = percent + "%";
+    document.getElementById("progress-bar").style.width = pct + "%";
 
     document.getElementById("percentile-text").innerText =
-        `你超过了全球 ${level.percentile}% 的人类`;
+        `你超过了全球 ${lv.percentile}% 的人类`;
 }
 
 
-/* ===========================================================
-   📝 保存今日记录
-=========================================================== */
 
+/* ===========================================================
+   📝 保存记录
+=========================================================== */
 function saveToday(){
     const e = JSON.parse(localStorage.getItem("today_element"));
     const s = JSON.parse(localStorage.getItem("today_standard"));
@@ -796,16 +753,16 @@ function saveToday(){
 }
 
 
+
 /* ===========================================================
    📝 历史记录折叠 & 渲染
 =========================================================== */
-
 function toggleHistory(){
-    const el = document.getElementById("history-content");
+    const box = document.getElementById("history-content");
     const arrow = document.getElementById("history-arrow");
-    const open = el.style.display === "block";
+    const open = box.style.display === "block";
 
-    el.style.display = open ? "none" : "block";
+    box.style.display = open ? "none" : "block";
     arrow.style.transform = open ? "rotate(0deg)" : "rotate(180deg)";
 
     if (!open) renderHistory();
@@ -822,31 +779,31 @@ function renderHistory(){
 
     logs = logs.sort((a,b)=> new Date(b.date) - new Date(a.date));
 
-    let html = "";
-    logs.forEach((r, index)=>{
+    let html="";
+    logs.forEach((r,i)=>{
         html += `
-        <div class="card" style="margin-top:12px; cursor:pointer;" onclick="toggleHistoryDetail(${index})">
+        <div class="card" style="margin-top:12px; cursor:pointer;" onclick="toggleHistoryDetail(${i})">
 
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="font-size:15px; font-weight:600; color:var(--green-deep);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:15px;font-weight:600;color:var(--green-deep);">
                     🐸 ${r.date}
                 </div>
-                <div id="arrow-h${index}" style="font-size:18px;">▼</div>
+                <div id="arrow-h${i}" style="font-size:18px;">▼</div>
             </div>
 
-            <div style="font-size:14px; color:var(--text-sub); margin-top:6px;">
-                元素卡：${r.element} | 标准卡：${r.standard}
+            <div style="font-size:14px;color:var(--text-sub);margin-top:6px;">
+                元素卡：${r.element} |
+                标准卡：${r.standard}
             </div>
 
-            <div id="history-detail-${index}" style="
-                display:none; 
+            <div id="history-detail-${i}" style="
+                display:none;
                 margin-top:14px;
                 padding:12px;
                 background:#f0fdf4;
                 border-radius:12px;
                 color:#166534;
-                line-height:1.6;
-                ">
+                line-height:1.6;">
                 ${r.text.replace(/\n/g,"<br>")}
             </div>
 
@@ -857,119 +814,117 @@ function renderHistory(){
 }
 
 function toggleHistoryDetail(i){
-    const detail = document.getElementById("history-detail-"+i);
+    const d = document.getElementById("history-detail-"+i);
     const arrow = document.getElementById("arrow-h"+i);
-    const open = detail.style.display === "block";
+    const open = d.style.display === "block";
 
-    detail.style.display = open ? "none" : "block";
+    d.style.display = open ? "none" : "block";
     arrow.style.transform = open ? "rotate(0deg)" : "rotate(180deg)";
 }
 
 
+
 /* ===========================================================
-   📅 每周成长报告（生成 & 折叠）
+   📅 每周成长报告（生成 + 折叠）
 =========================================================== */
-
 function toggleWeeklyReport(){
-    const el = document.getElementById("weekly-report-content");
+    const box = document.getElementById("weekly-report-content");
     const arrow = document.getElementById("weekly-arrow");
-    const open = el.style.display === "block";
+    const open = box.style.display === "block";
 
-    el.style.display = open ? "none" : "block";
+    box.style.display = open ? "none" : "block";
     arrow.style.transform = open ? "rotate(0deg)" : "rotate(180deg)";
 
-    if (!open) generateWeeklyReport();
+    if(!open) generateWeeklyReport();
 }
 
 function generateWeeklyReport(){
     const logs = JSON.parse(localStorage.getItem("logs") || "[]");
     const now = Date.now();
-    const oneWeek = 7 * 24 * 3600 * 1000;
+    const oneWeek = 7*24*3600*1000;
 
     const weekLogs = logs.filter(r=> now - new Date(r.date).getTime() < oneWeek);
     const box = document.getElementById("weekly-report-box");
 
     if (!weekLogs.length){
-        box.innerHTML = `本周还没有记录 🐸<br>写下一条记录就会生成你的成长报告。`;
+        box.innerHTML = "本周没有记录 🐸<br>写一条记录后，这里将自动生成成长报告。";
         return;
     }
 
     const count = weekLogs.length;
 
     const avgScore = (
-        weekLogs.reduce((sum,r)=> sum + r.standardScore + r.honestyScore ,0)
+        weekLogs.reduce((s,r)=> s + r.standardScore + r.honestyScore ,0)
         / count
     ).toFixed(2);
 
     const stats = {};
-
     weekLogs.forEach(r=>{
         stats[r.element] = (stats[r.element]||0)+1;
     });
 
-    const bestElement = Object.keys(stats).sort((a,b)=> stats[b] - stats[a])[0];
-    const weakElement = Object.keys(stats).sort((a,b)=> stats[a] - stats[b])[0];
+    const best = Object.keys(stats).sort((a,b)=> stats[b]-stats[a])[0];
+    const weak = Object.keys(stats).sort((a,b)=> stats[a]-stats[b])[0];
 
     box.innerHTML = `
         <b>🐸 本周记录次数：</b> ${count} 次<br>
         <b>⭐ 平均思维得分：</b> ${avgScore}<br>
-        <b>🎯 最常练习要素：</b> ${bestElement}<br>
-        <b>🪩 最少练习要素：</b> ${weakElement}<br><br>
+        <b>🎯 最常练习要素：</b> ${best}<br>
+        <b>🪩 最少练习要素：</b> ${weak}<br><br>
 
         <b>🐸 大师建议：</b><br>
-        <div style="
-            background:#f0fdf4;
-            padding:12px;
-            border-radius:12px;
-            color:#166534;
-        ">
+        <div style="background:#f0fdf4;padding:12px;border-radius:12px;color:#166534;">
             ${
-                weakElement === "假设"
-                ? "本周建议试着找找你思维中的“默认设定”，并反问：如果这是错的呢？"
-                : weakElement === "信息"
-                ? "本周可练习“区分事实与推测”，让你推论更扎实。"
-                : "你的整体表现很稳定，继续保持每日的小练习 🐸✨"
+                weak === "假设"
+                ? "本周建议多练“识别隐藏假设”。试着问自己：如果这个假设是错的呢？"
+                : weak === "信息"
+                ? "下周可以练习“区分事实与推测”。让你的推论更扎实。"
+                : "你的整体表现很稳定，每天一点点就是成长 🐸✨"
             }
         </div>
     `;
 }
 
 
-/* ===========================================================
-   🧠 思维动画（八要素轮播）
-=========================================================== */
 
+/* ===========================================================
+   🧠 思维动画（八要素流动）
+=========================================================== */
 let stepsFlow = ["purpose","question","info","concept","assumption","inference","view","impact"];
 let idx = 0;
+
 setInterval(()=>{
-    stepsFlow.forEach(s=> {
+    stepsFlow.forEach(s=>{
         const el = document.getElementById("step-"+s);
         if(el) el.classList.remove("active");
     });
-    const current = document.getElementById("step-"+stepsFlow[idx]);
-    if(current) current.classList.add("active");
-    idx = (idx + 1) % stepsFlow.length;
-}, 1800);
+
+    const curr = document.getElementById("step-"+stepsFlow[idx]);
+    if(curr) curr.classList.add("active");
+
+    idx = (idx+1)%stepsFlow.length;
+},1800);
+
 
 
 /* ===========================================================
-   📊 图表系统（八要素雷达、九标准雷达、阶段曲线）
+   📊 图表系统（八要素雷达、标准雷达、阶段趋势折线）
 =========================================================== */
 
-function calcElementFrequency(logs) {
-    const keys = ["目的", "问题", "信息", "概念", "推论", "假设", "视角", "后果"];
+function calcElementFrequency(logs){
+    const keys = ["目的","问题","信息","概念","推论","假设","视角","后果"];
     return {
         labels: keys,
-        data: keys.map(k => logs.filter(r => r.element === k).length)
+        data: keys.map(k=> logs.filter(r=>r.element===k).length)
     };
 }
 
-function calcStandardScores(logs) {
-    const keys = ["清晰", "准确", "精确", "相关", "深刻", "广度", "逻辑", "重要性", "公正"];
+function calcStandardScores(logs){
+    const keys = ["清晰","准确","精确","相关","深刻","广度","逻辑","重要性","公正"];
     return {
         labels: keys,
-        data: keys.map(st => {
-            const arr = logs.filter(r => r.standard === st);
+        data: keys.map(k=>{
+            const arr = logs.filter(r=>r.standard===k);
             if(!arr.length) return 0;
             return arr.reduce((a,b)=>a+b.standardScore,0) / arr.length;
         })
@@ -977,13 +932,13 @@ function calcStandardScores(logs) {
 }
 
 function calcStageTrend(logs){
-    logs = [...logs].sort((a,b)=> new Date(a.date) - new Date(b.date));
+    logs = [...logs].sort((a,b)=> new Date(a.date)-new Date(b.date));
     return {
-        labels: logs.map(r => r.date),
-        values: logs.map(r => {
-            const sc = (r.standardScore + r.honestyScore) / 2;
-            if (sc < 2) return 1;
-            if (sc < 2.5) return 2;
+        labels: logs.map(r=>r.date),
+        values: logs.map(r=>{
+            const sc = (r.standardScore + r.honestyScore)/2;
+            if(sc<2) return 1;
+            if(sc<2.5) return 2;
             return 3;
         })
     };
@@ -992,45 +947,43 @@ function calcStageTrend(logs){
 let elementRadarChart, standardRadarChart, stageTrendChart;
 
 function renderCharts(logs){
-    const elementData = calcElementFrequency(logs);
-    const standardData = calcStandardScores(logs);
+    const element = calcElementFrequency(logs);
+    const std = calcStandardScores(logs);
     const trend = calcStageTrend(logs);
 
-    if (elementRadarChart) elementRadarChart.destroy();
-    if (standardRadarChart) standardRadarChart.destroy();
-    if (stageTrendChart) stageTrendChart.destroy();
+    if(elementRadarChart) elementRadarChart.destroy();
+    if(standardRadarChart) standardRadarChart.destroy();
+    if(stageTrendChart) stageTrendChart.destroy();
 
     elementRadarChart = new Chart(
         document.getElementById("elementRadar"),
         {
             type:'radar',
             data:{
-                labels: elementData.labels,
+                labels: element.labels,
                 datasets:[{
                     label:"练习次数",
-                    data: elementData.data,
+                    data: element.data,
                     borderColor:"#22c55e",
                     backgroundColor:"rgba(34,197,94,0.2)"
                 }]
             }
-        }
-    );
+        });
 
     standardRadarChart = new Chart(
         document.getElementById("standardRadar"),
         {
             type:'radar',
             data:{
-                labels: standardData.labels,
+                labels: std.labels,
                 datasets:[{
                     label:"平均分",
-                    data: standardData.data,
+                    data: std.data,
                     borderColor:"#3b82f6",
                     backgroundColor:"rgba(59,130,246,0.2)"
                 }]
             }
-        }
-    );
+        });
 
     stageTrendChart = new Chart(
         document.getElementById("stageTrend"),
@@ -1051,16 +1004,11 @@ function renderCharts(logs){
                     y:{min:1,max:3,ticks:{stepSize:1}}
                 }
             }
-        }
-    );
+        });
 }
 
 
-/* ========== 页面初始化 ========== */
-updateLevelUI();
-
-</script>
-
-
-</body>
-</html>
+/* ===========================================================
+   🚀 页面初始化
+=========================================================== */
+updateLevel
