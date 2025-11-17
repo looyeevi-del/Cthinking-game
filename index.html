@@ -860,6 +860,128 @@ function toggleMasterBeautiful(id){
     arrow.style.transform = open ? "rotate(0deg)" : "rotate(180deg)";
 }
 </script>
+<script>
+/* ========== 抽卡数据 ========== */
 
+// 元素卡
+const elementCards = [
+    {key:"目的", text:"【目的卡】你的真正目的是什么？表面目的是？"},
+    {key:"问题", text:"【问题卡】把你纠结的一件事，改写成一个清晰的问题句。"},
+    {key:"信息", text:"【信息卡】写出该问题：3 个事实 ＋ 3 个猜测。"},
+    {key:"概念", text:"【概念卡】选一个抽象词，如自由/安全/成就，写下你的定义。"},
+    {key:"推论", text:"【推论卡】写一个你的结论，并列出 2–3 条理由。"},
+    {key:"假设", text:"【假设卡】你在哪些点上“想当然”？如果这些是错的呢？"},
+    {key:"视角", text:"【视角卡】从与你立场相反的角度，写 2 句话。"},
+    {key:"后果", text:"【后果卡】写出你一个决定的短期后果 + 长期后果。"}
+];
+
+// 标准卡
+const standardCards = [
+    {key:"清晰", text:"【清晰卡】你的表达是否让陌生人能理解？"},
+    {key:"准确", text:"【准确卡】哪些内容有事实支持？哪些可能错误？"},
+    {key:"精确", text:"【精确卡】是否可以更具体、可验证？"},
+    {key:"相关", text:"【相关卡】每一句话都解决核心问题了吗？"},
+    {key:"深刻", text:"【深刻卡】你是否触及更深层原因？"},
+    {key:"广度", text:"【广度卡】从反方看，会有什么新发现？"},
+    {key:"逻辑", text:"【逻辑卡】你的理由与结论之间连贯吗？"},
+    {key:"重要性", text:"【重要性卡】你是否关注关键点？"},
+    {key:"公正", text:"【公正卡】你是否公平对自己与他人？"},
+];
+
+
+/* ========== 抽卡函数（你缺少的核心部分） ========== */
+function drawElementCard() {
+    const card = elementCards[Math.floor(Math.random()*elementCards.length)];
+    document.getElementById("elementCard").innerText = card.text;
+    localStorage.setItem("today_element", JSON.stringify(card));
+}
+
+function drawStandardCard() {
+    const card = standardCards[Math.floor(Math.random()*standardCards.length)];
+    document.getElementById("standardCard").innerText = card.text;
+    localStorage.setItem("today_standard", JSON.stringify(card));
+}
+
+
+/* ========== 积分 & 等级系统 ========== */
+
+// 等级区间
+const LEVELS = [
+    { level: 1, name: "思维萌芽 Seedling", min: 0, max: 99, percentile: 20 },
+    { level: 2, name: "思维观察者 Observer", min: 100, max: 249, percentile: 35 },
+    { level: 3, name: "思维探索者 Explorer", min: 250, max: 499, percentile: 50 },
+    { level: 4, name: "思维实践者 Practitioner", min: 500, max: 899, percentile: 70 },
+    { level: 5, name: "思维策士 Strategist", min: 900, max: 1499, percentile: 85 },
+    { level: 6, name: "思维驾驭者 Navigator", min: 1500, max: 2499, percentile: 95 },
+    { level: 7, name: "思维大师 Master", min: 2500, max: 999999, percentile: 99 }
+];
+
+// 每日积分
+function calculateEXP(record){
+    return (record.standardScore + record.honestyScore) * 5;
+}
+
+// 总积分
+function getTotalEXP(logs){
+    return logs.reduce((sum, r)=> sum + calculateEXP(r), 0);
+}
+
+function getLevel(total){
+    return LEVELS.find(lv => total>=lv.min && total<=lv.max);
+}
+
+function getNextEXP(level){
+    return level.level===7 ? level.max : LEVELS[level.level].min;
+}
+
+
+/* ========== 保存记录 ========== */
+function saveToday(){
+    const element = JSON.parse(localStorage.getItem("today_element"));
+    const standard = JSON.parse(localStorage.getItem("today_standard"));
+
+    if(!element || !standard){
+        alert("请先抽元素卡和标准卡！");
+        return;
+    }
+
+    const text = document.getElementById("elementAnswer").value.trim();
+
+    const record = {
+        date: new Date().toISOString().slice(0,10),
+        element: element.key,
+        standard: standard.key,
+        text: text,
+        standardScore: parseInt(document.getElementById("standardScore").value),
+        honestyScore: parseInt(document.getElementById("honestyScore").value)
+    };
+
+    let logs = JSON.parse(localStorage.getItem("logs") || "[]");
+    logs.push(record);
+    localStorage.setItem("logs", JSON.stringify(logs));
+
+    alert("已保存！");
+    updateLevelUI();
+}
+
+
+/* ========== 等级 UI 更新 ========== */
+function updateLevelUI(){
+    const logs = JSON.parse(localStorage.getItem("logs") || "[]");
+
+    const total = getTotalEXP(logs);
+    const level = getLevel(total);
+    const next = getNextEXP(level);
+    const percent = Math.min((total - level.min) / (next - level.min), 1) * 100;
+
+    document.getElementById("level-title").innerText = `等级 Lv.${level.level}：${level.name}`;
+    document.getElementById("level-exp-text").innerText = `积分：${total} / ${next}`;
+    document.getElementById("progress-bar").style.width = percent + "%";
+    document.getElementById("percentile-text").innerText =
+        `你超过了全球 ${level.percentile}% 的人类`;
+}
+
+updateLevelUI();
+</script>
 </body>
 </html>
