@@ -1,132 +1,181 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>思维冒险者 · 思维训练小游戏</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>思维冒险者 · 批判性思维训练小游戏</title>
 
-<!-- 引入 Chart.js -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- ====== STYLE ====== -->
+<!-- ===== 美丽 UI 的 CSS ===== -->
 <style>
     body {
         margin: 0;
-        padding: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-        background: #f8f8f8;
+        font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: linear-gradient(135deg, #dbeafe, #fef3c7);
+        min-height: 100vh;
     }
 
+    /* 顶部标题栏 */
     header {
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:12px;
-        padding: 15px 0;
-        background:#222;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 18px 0;
+        background: #1e293b;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
     header img {
-        height:48px;
-        width:auto;
-        border-radius:8px;
+        height: 48px;
+        border-radius: 8px;
     }
 
     header span {
-        font-size:20px;
-        color:white;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
     }
 
+    /* 卡片整体容器 */
     .container {
-        padding: 20px;
-        max-width: 680px;
+        max-width: 760px;
         margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* 最漂亮的卡片卡片！！ */
+    .card {
+        background: rgba(255,255,255,0.65);
+        backdrop-filter: blur(14px);
+        padding: 20px;
+        border-radius: 18px;
+        box-shadow: 0 10px 35px rgba(0,0,0,0.1);
+        margin-bottom: 26px;
+        border: 1px solid rgba(255,255,255,0.4);
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 12px;
+        color: #1e293b;
     }
 
     button {
-        padding: 12px 18px;
+        background: #3b82f6;
         border: none;
-        background: #3a5dd0;
-        color: white;
+        padding: 12px 16px;
+        border-radius: 10px;
         font-size: 15px;
-        border-radius: 6px;
+        color: white;
         cursor: pointer;
-        margin: 10px 0;
+        transition: 0.2s;
     }
-
     button:hover {
-        opacity: 0.9;
+        background: #2563eb;
     }
 
     textarea {
         width: 100%;
-        padding: 10px;
-        min-height: 130px;
-        margin-top: 10px;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid #cbd5e1;
         font-size: 15px;
-        border-radius: 6px;
-        border: 1px solid #ddd;
         box-sizing: border-box;
-    }
-
-    .card {
-        padding: 16px;
         background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        margin-bottom: 20px;
-    }
-
-    .section-title {
-        font-size: 17px;
-        margin-top: 5px;
-        margin-bottom: 10px;
-        font-weight: bold;
+        margin-top: 10px;
+        min-height:140px;
     }
 
     select {
-        padding: 8px;
-        border-radius: 6px;
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
         font-size: 15px;
-        border: 1px solid #ddd;
-    }
-
-    #weeklyStats {
-        white-space: pre-wrap;
-        font-size: 14px;
-        line-height: 1.6;
+        border: 1px solid #cbd5e1;
+        margin-bottom: 10px;
     }
 
     canvas {
         max-width: 100%;
+    }
+
+    /* 等级显示卡片 */
+    #level-card {
+        background: white;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        margin: 15px 0 30px 0;
+    }
+
+    #level-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 6px;
+        color:#1e293b;
+    }
+
+    #percentile-text {
+        margin-top: 6px;
+        font-size: 14px;
+        color:#475569;
+    }
+
+    /* 等级进度条 */
+    .progress-bg {
+        height: 12px;
+        background: #e2e8f0;
+        border-radius: 6px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+    #progress-bar {
+        height: 12px;
+        background: linear-gradient(90deg,#60a5fa,#2563eb);
+        width: 0%;
+        transition: width 0.5s ease;
     }
 </style>
 </head>
 
 <body>
 
-<!-- ====== HEADER（含 LOGO） ====== -->
+<!-- LOGO Header -->
 <header>
     <img src="ChatGPT Image 2025年11月17日 17_47_21.png" alt="logo">
     <span>思维冒险者 · 批判性思维训练小游戏</span>
 </header>
 
+<!-- 等级系统卡片 -->
+<div class="container">
+<div id="level-card">
+    <div id="level-title">等级：加载中...</div>
+    <div class="progress-bg">
+        <div id="progress-bar"></div>
+    </div>
+    <div id="level-exp-text" style="margin-top:6px; color:#475569;">积分：0</div>
+    <div id="percentile-text">你超过了全球 0% 的人类</div>
+</div>
+</div>
+
+<!-- 主体内容 -->
 <div class="container">
 
-    <!-- 抽卡区：思维要素 -->
     <div class="card">
         <div class="section-title">① 抽取今日思维元素卡</div>
         <button onclick="drawElementCard()">抽元素卡</button>
-        <p id="elementCard" style="font-size:16px; white-space:pre-wrap;"></p>
-
+        <p id="elementCard" style="white-space:pre-wrap;"></p>
         <textarea id="elementAnswer" placeholder="在这里写下你的回答..."></textarea>
     </div>
 
-    <!-- 抽卡区：思维标准 -->
     <div class="card">
         <div class="section-title">② 抽取今日思维标准卡</div>
         <button onclick="drawStandardCard()">抽标准卡</button>
-        <p id="standardCard" style="font-size:16px; white-space:pre-wrap;"></p>
+        <p id="standardCard" style="white-space:pre-wrap;"></p>
 
         <div class="section-title">为该标准打分（1–3 分）</div>
         <select id="standardScore">
@@ -145,232 +194,205 @@
 
     <button onclick="saveToday()">保存今日记录</button>
 
-    <!-- 周统计 -->
     <div class="card">
         <div class="section-title">③ 本周统计（自动计算）</div>
-        <p id="weeklyStats"></p>
+        <pre id="weeklyStats"></pre>
         <button onclick="showWeekly()">刷新统计 & 图表</button>
     </div>
 
-    <!-- 图表：八要素雷达 -->
     <div class="card">
-        <div class="section-title">📊 思维要素练习覆盖度（雷达图）</div>
+        <div class="section-title">📊 思维要素练习覆盖度</div>
         <canvas id="elementRadar"></canvas>
     </div>
 
-    <!-- 图表：九标准雷达 -->
     <div class="card">
-        <div class="section-title">📊 思维标准平均分（雷达图）</div>
+        <div class="section-title">📊 思维标准平均分</div>
         <canvas id="standardRadar"></canvas>
     </div>
 
-    <!-- 图表：阶段趋势折线 -->
     <div class="card">
-        <div class="section-title">📈 思维阶段趋势（折线图）</div>
+        <div class="section-title">📈 思维阶段趋势</div>
         <canvas id="stageTrend"></canvas>
     </div>
 
 </div>
 
-<!-- ====== SCRIPT ====== -->
+<!-- ================= JS ================= -->
 <script>
-/* ---- 元素卡 ---- */
+/********** 元素卡 **********/
 const elementCards = [
-    {key:"目的", text:"【目的卡】写下你正在关注的一件事：你的真正目的是什么？表面目的是？"},
-    {key:"问题", text:"【问题卡】把你正在纠结的一件事，改写成一个清晰的问题句。"},
-    {key:"信息", text:"【信息卡】写出与该问题相关的：3 个事实 + 3 个猜测，并标清。"},
-    {key:"概念", text:"【概念卡】选一个抽象词（如自由/成功/安全），写出你现在的定义。"},
-    {key:"推论", text:"【推论卡】写一个你最近得出的结论，并列出 2–3 个支持它的理由。"},
-    {key:"假设", text:"【假设卡】写出你在这个话题中的“想当然”假设，并问：如果这是错的呢？"},
-    {key:"视角", text:"【视角卡】从与你立场相反的人的视角，写 2 句话看待同一件事。"},
-    {key:"后果", text:"【后果卡】写出你某个决定的：1 个短期后果 + 1 个长期后果。"},
+    {key:"目的", text:"【目的卡】你的真正目的是什么？表面目的是？"},
+    {key:"问题", text:"【问题卡】把你纠结的一件事，改写成一个清晰的问题句。"},
+    {key:"信息", text:"【信息卡】写出该问题：3 个事实 + 3 个猜测"},
+    {key:"概念", text:"【概念卡】选一个抽象词（如自由/安全），写下你的定义。"},
+    {key:"推论", text:"【推论卡】写一个结论，并列出支撑理由。"},
+    {key:"假设", text:"【假设卡】你的默认假设是什么？如果这是错的呢？"},
+    {key:"视角", text:"【视角卡】从对立面视角写 2 句话。"},
+    {key:"后果", text:"【后果卡】写出一个决定的短期 + 长期后果。"},
 ];
 
-/* ---- 标准卡 ---- */
+/********** 标准卡 **********/
 const standardCards = [
-    {key:"清晰", text:"【清晰卡】你的表达是否让陌生人也能准确理解？"},
-    {key:"准确", text:"【准确卡】哪些内容是可验证的事实？有没有可能错的地方？"},
-    {key:"精确", text:"【精确卡】是否可以用更具体的数字、例子或情境来说明？"},
-    {key:"相关", text:"【相关卡】你写的每一句话，都紧扣同一个核心问题吗？"},
-    {key:"深刻", text:"【深刻卡】你是否触到这件事更深一层的矛盾或困难？"},
-    {key:"广度", text:"【广度卡】如果你必须站在相反立场思考，会怎么重写？"},
-    {key:"逻辑", text:"【逻辑卡】你的理由和结论之间是否前后一致、没有矛盾？"},
-    {key:"重要性", text:"【重要性卡】你关注的是最关键的部分，还是一些枝节？"},
-    {key:"公正", text:"【公正卡】你是否用同样标准评判自己和他人？"},
+    {key:"清晰", text:"【清晰卡】你的表达是否让陌生人能理解？"},
+    {key:"准确", text:"【准确卡】哪些是事实？哪些可能错误？"},
+    {key:"精确", text:"【精确卡】可以更具体吗？"},
+    {key:"相关", text:"【相关卡】每句话都紧扣核心问题吗？"},
+    {key:"深刻", text:"【深刻卡】你触到问题的难点了吗？"},
+    {key:"广度", text:"【广度卡】如果必须站反方，你会怎么写？"},
+    {key:"逻辑", text:"【逻辑卡】理由与结论一致吗？"},
+    {key:"重要性", text:"【重要性卡】你关注的是最关键之处吗？"},
+    {key:"公正", text:"【公正卡】你是否对自己和他人用同一标准？"},
 ];
 
-/* ---- 抽卡 ---- */
+/********** 抽卡函数 **********/
 function drawElementCard() {
-    const card = elementCards[Math.floor(Math.random()*elementCards.length)];
-    document.getElementById("elementCard").innerText = card.text;
-    localStorage.setItem("today_element", JSON.stringify(card));
+    const c = elementCards[Math.floor(Math.random()*elementCards.length)];
+    document.getElementById("elementCard").innerText = c.text;
+    localStorage.setItem("today_element", JSON.stringify(c));
 }
-
 function drawStandardCard() {
-    const card = standardCards[Math.floor(Math.random()*standardCards.length)];
-    document.getElementById("standardCard").innerText = card.text;
-    localStorage.setItem("today_standard", JSON.stringify(card));
+    const c = standardCards[Math.floor(Math.random()*standardCards.length)];
+    document.getElementById("standardCard").innerText = c.text;
+    localStorage.setItem("today_standard", JSON.stringify(c));
 }
 
-/* ---- 保存 ---- */
-function saveToday() {
-    const element = JSON.parse(localStorage.getItem("today_element"));
-    const standard = JSON.parse(localStorage.getItem("today_standard"));
-    if(!element || !standard) {
-        alert("请先抽元素卡和标准卡，再保存。");
-        return;
-    }
+/********** 等级系统配置 **********/
+const LEVELS = [
+    { level: 1, name: "思维萌芽 Seedling", min: 0, max: 99, percentile: 20 },
+    { level: 2, name: "思维观察者 Observer", min: 100, max: 249, percentile: 35 },
+    { level: 3, name: "思维探索者 Explorer", min: 250, max: 499, percentile: 50 },
+    { level: 4, name: "思维实践者 Practitioner", min: 500, max: 899, percentile: 70 },
+    { level: 5, name: "思维策士 Strategist", min: 900, max: 1499, percentile: 85 },
+    { level: 6, name: "思维驾驭者 Navigator", min: 1500, max: 2499, percentile: 95 },
+    { level: 7, name: "思维大师 Master", min: 2500, max: 999999, percentile: 99 },
+];
 
-    const text = document.getElementById("elementAnswer").value.trim();
-    if (!text) {
-        if (!confirm("你还没有写任何内容，确定也要保存吗？")) return;
-    }
+// 每日 EXP
+function calculateEXP(r){ return (r.standardScore + r.honestyScore) * 5; }
+function getTotalEXP(logs){ return logs.reduce((a,r)=>a+calculateEXP(r),0); }
+function getLevel(total){ return LEVELS.find(l=>total>=l.min && total<=l.max); }
+function getNextEXP(lv){ return lv.level==7? lv.max : LEVELS[lv.level].min; }
 
-    const record = {
-        date: new Date().toISOString().slice(0,10),
-        element: element.key,
-        standard: standard.key,
-        text: text,
-        standardScore: parseInt(document.getElementById("standardScore").value),
-        honestyScore: parseInt(document.getElementById("honestyScore").value),
+/********** 保存记录 **********/
+function saveToday(){
+    const e = JSON.parse(localStorage.getItem("today_element"));
+    const s = JSON.parse(localStorage.getItem("today_standard"));
+    if(!e||!s){ alert("请先抽卡！"); return; }
+
+    const text=document.getElementById("elementAnswer").value.trim();
+    const rec={
+        date:new Date().toISOString().slice(0,10),
+        element:e.key,
+        standard:s.key,
+        text,
+        standardScore:parseInt(document.getElementById("standardScore").value),
+        honestyScore:parseInt(document.getElementById("honestyScore").value)
     };
+    let logs=JSON.parse(localStorage.getItem("logs")||"[]");
+    logs.push(rec);
+    localStorage.setItem("logs",JSON.stringify(logs));
 
-    let logs = JSON.parse(localStorage.getItem("logs") || "[]");
-    logs.push(record);
-    localStorage.setItem("logs", JSON.stringify(logs));
-
-    alert("今日记录已保存！");
+    alert("已保存！");
+    updateLevelUI();
 }
 
-/* ---- 周统计 ---- */
-function showWeekly() {
-    const logs = JSON.parse(localStorage.getItem("logs") || "[]");
-    const now = Date.now();
-    const oneWeek = 7 * 24 * 3600 * 1000;
+/********** 更新等级 UI **********/
+function updateLevelUI(){
+    const logs=JSON.parse(localStorage.getItem("logs")||"[]");
+    const total=getTotalEXP(logs);
+    const lv=getLevel(total);
+    const next=getNextEXP(lv);
+    const pct = Math.min((total-lv.min)/(next-lv.min),1)*100;
 
-    const weekLogs = logs.filter(r => now - new Date(r.date).getTime() < oneWeek);
-    const weeklyStatsEl = document.getElementById("weeklyStats");
+    document.getElementById("level-title").innerText=`等级 Lv.${lv.level}：${lv.name}`;
+    document.getElementById("level-exp-text").innerText=`积分：${total} / ${next}`;
+    document.getElementById("progress-bar").style.width = pct+"%";
+    document.getElementById("percentile-text").innerText =
+        `你的思维水平超过了全球 ${lv.percentile}% 的人类`;
+}
 
-    if (weekLogs.length === 0){
-        weeklyStatsEl.innerText = "本周还没有记录。先去抽一张卡试试吧～";
+/********** 图表 **********/
+let elementRadarChart,standardRadarChart,stageTrendChart;
+
+function calcElementFrequency(logs){
+    const keys=["目的","问题","信息","概念","推论","假设","视角","后果"];
+    return {labels:keys,data:keys.map(k=>logs.filter(r=>r.element==k).length)};
+}
+function calcStandardScores(logs){
+    const keys=["清晰","准确","精确","相关","深刻","广度","逻辑","重要性","公正"];
+    return {labels:keys,data:keys.map(k=>{
+        const l=logs.filter(r=>r.standard==k);
+        return l.length? l.reduce((a,b)=>a+b.standardScore,0)/l.length : 0;
+    })};
+}
+function calcStageTrend(logs){
+    logs=[...logs].sort((a,b)=>new Date(a.date)-new Date(b.date));
+    return {
+        labels:logs.map(r=>r.date),
+        values:logs.map(r=>{
+            const sc=(r.standardScore+r.honestyScore)/2;
+            if(sc<2) return 1;
+            if(sc<2.5) return 2;
+            return 3;
+        })
+    };
+}
+
+function showWeekly(){
+    const logs=JSON.parse(localStorage.getItem("logs")||"[]");
+    const now=Date.now(),week=7*24*3600*1000;
+    const weekLogs=logs.filter(r=>now-new Date(r.date).getTime()<week);
+    const el=document.getElementById("weeklyStats");
+
+    if(!weekLogs.length){
+        el.innerText="本周还没有记录";
         renderCharts(logs);
         return;
     }
 
-    const avg = (arr, key) => arr.reduce((a,b)=>a+b[key],0) / arr.length;
+    const avg=(arr,key)=>arr.reduce((a,b)=>a+b[key],0)/arr.length;
 
-    const msg =
-        `本周练习次数：${weekLogs.length}\n` +
-        `平均标准得分：${avg(weekLogs,"standardScore").toFixed(2)}\n` +
-        `平均诚实度：${avg(weekLogs,"honestyScore").toFixed(2)}\n` +
-        `覆盖的思维要素：${[...new Set(weekLogs.map(r=>r.element))].join("，")}\n` +
-        `覆盖的思维标准：${[...new Set(weekLogs.map(r=>r.standard))].join("，")}`;
-
-    weeklyStatsEl.innerText = msg;
+    el.innerText=
+        `本周练习次数：${weekLogs.length}\n`+
+        `平均标准得分：${avg(weekLogs,"standardScore").toFixed(2)}\n`+
+        `平均诚实度：${avg(weekLogs,"honestyScore").toFixed(2)}\n`+
+        `覆盖要素：${[...new Set(weekLogs.map(r=>r.element))].join("，")}\n`+
+        `覆盖标准：${[...new Set(weekLogs.map(r=>r.standard))].join("，")}`;
 
     renderCharts(logs);
 }
 
-/* ---- 图表计算 ---- */
-function calcElementFrequency(logs) {
-    const elements = ["目的","问题","信息","概念","推论","假设","视角","后果"];
-    const freq = elements.map(el => logs.filter(r => r.element === el).length);
-    return { labels: elements, data: freq };
-}
+function renderCharts(logs){
+    const e=calcElementFrequency(logs);
+    const s=calcStandardScores(logs);
+    const st=calcStageTrend(logs);
 
-function calcStandardScores(logs) {
-    const standards = ["清晰","准确","精确","相关","深刻","广度","逻辑","重要性","公正"];
-    const data = standards.map(st => {
-        const filtered = logs.filter(r => r.standard === st);
-        if (filtered.length === 0) return 0;
-        return filtered.reduce((a,b)=>a+b.standardScore,0) / filtered.length;
-    });
-    return { labels: standards, data };
-}
+    if(elementRadarChart) elementRadarChart.destroy();
+    if(standardRadarChart) standardRadarChart.destroy();
+    if(stageTrendChart) stageTrendChart.destroy();
 
-function calcStageTrend(logs) {
-    const sorted = [...logs].sort((a,b)=> new Date(a.date) - new Date(b.date));
-    const labels = sorted.map(r => r.date);
-    const values = sorted.map(r => {
-        const score = (r.standardScore + r.honestyScore) / 2;
-        if (score < 2) return 1;
-        if (score < 2.5) return 2;
-        return 3;
-    });
-    return { labels, values };
-}
-
-/* ---- 图表渲染 ---- */
-let elementRadarChart = null;
-let standardRadarChart = null;
-let stageTrendChart = null;
-
-function renderCharts(logs) {
-    if (!logs || logs.length === 0) return;
-
-    const elementCtx = document.getElementById("elementRadar");
-    const standardCtx = document.getElementById("standardRadar");
-    const stageCtx = document.getElementById("stageTrend");
-
-    const elementData = calcElementFrequency(logs);
-    const standardData = calcStandardScores(logs);
-    const stageData = calcStageTrend(logs);
-
-    if (elementRadarChart) elementRadarChart.destroy();
-    if (standardRadarChart) standardRadarChart.destroy();
-    if (stageTrendChart) stageTrendChart.destroy();
-
-    elementRadarChart = new Chart(elementCtx, {
-        type: 'radar',
-        data: {
-            labels: elementData.labels,
-            datasets: [{
-                label: '练习次数',
-                data: elementData.data,
-                fill: true,
-                borderColor: "#3a5dd0",
-                backgroundColor: "rgba(58,93,208,0.2)"
-            }]
-        }
+    elementRadarChart=new Chart(document.getElementById("elementRadar"),{
+        type:'radar',
+        data:{labels:e.labels,datasets:[{label:"练习次数",data:e.data,
+            borderColor:"#3b82f6",backgroundColor:"rgba(59,130,246,0.25)"}]}
     });
 
-    standardRadarChart = new Chart(standardCtx, {
-        type: 'radar',
-        data: {
-            labels: standardData.labels,
-            datasets: [{
-                label: '平均分',
-                data: standardData.data,
-                fill: true,
-                borderColor: "#da4453",
-                backgroundColor: "rgba(218,68,83,0.2)"
-            }]
-        }
+    standardRadarChart=new Chart(document.getElementById("standardRadar"),{
+        type:'radar',
+        data:{labels:s.labels,datasets:[{label:"平均分",data:s.data,
+            borderColor:"#ef4444",backgroundColor:"rgba(239,68,68,0.25)"}]}
     });
 
-    stageTrendChart = new Chart(stageCtx, {
-        type: 'line',
-        data: {
-            labels: stageData.labels,
-            datasets: [{
-                label: "阶段（1=挣扎，2=初学，3=练习）",
-                data: stageData.values,
-                borderColor: "#27ae60",
-                pointRadius: 3,
-                tension: 0.3
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    min: 1,
-                    max: 3,
-                    ticks: { stepSize: 1 }
-                }
-            }
-        }
+    stageTrendChart=new Chart(document.getElementById("stageTrend"),{
+        type:'line',
+        data:{labels:st.labels,datasets:[{label:"阶段趋势(1挣扎/2初学/3练习)",
+            data:st.values,borderColor:"#10b981",tension:0.3}]},
+        options:{scales:{y:{min:1,max:3,stepSize:1}}}
     });
 }
+
+/* 网页加载时更新等级 */
+updateLevelUI();
 </script>
 
 </body>
