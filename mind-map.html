@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>思维星图 · 我的思维宇宙</title>
+
+<!-- D3.js 用来画星图 -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: radial-gradient(circle at top, #bbf7d0, #dcfce7, #fefce8);
+        min-height: 100vh;
+    }
+
+    header {
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:14px 18px;
+        background:#14532d;
+        color:white;
+        box-shadow:0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    header .left {
+        display:flex;
+        align-items:center;
+        gap:10px;
+    }
+
+    header img {
+        height:38px;
+        border-radius:10px;
+    }
+
+    header .title-main {
+        font-size:18px;
+        font-weight:bold;
+    }
+    header .title-sub {
+        font-size:12px;
+        opacity:0.8;
+    }
+
+    header button {
+        background:#22c55e;
+        border:none;
+        color:white;
+        padding:8px 12px;
+        border-radius:999px;
+        font-size:13px;
+        cursor:pointer;
+    }
+
+    .container {
+        max-width:900px;
+        margin:0 auto;
+        padding:20px;
+    }
+
+    .card {
+        background:rgba(255,255,255,0.8);
+        backdrop-filter:blur(12px);
+        border-radius:20px;
+        padding:20px;
+        box-shadow:0 12px 40px rgba(0,0,0,0.12);
+        margin-top:18px;
+        position:relative;
+    }
+
+    .card::after {
+        content:"🐸";
+        position:absolute;
+        top:14px;
+        right:18px;
+        font-size:20px;
+        opacity:0.8;
+    }
+
+    .section-title {
+        font-size:18px;
+        font-weight:bold;
+        color:#14532d;
+        margin-bottom:8px;
+    }
+
+    .section-desc {
+        font-size:14px;
+        color:#4b5563;
+        line-height:1.7;
+        margin-bottom:10px;
+    }
+
+    #map-container {
+        margin-top:10px;
+        border-radius:18px;
+        background:radial-gradient(circle at top,#bbf7d0,#ecfdf5,#fefce8);
+        border:1px solid rgba(148,163,184,0.3);
+        overflow:hidden;
+    }
+
+    svg {
+        width:100%;
+        height:480px;
+        display:block;
+    }
+
+    .node circle {
+        cursor:pointer;
+        stroke:white;
+        stroke-width:1.5px;
+    }
+
+    .node text {
+        font-size:12px;
+        pointer-events:none;
+        fill:#064e3b;
+        text-shadow:0 1px 2px rgba(255,255,255,0.7);
+    }
+
+    .tooltip {
+        position:absolute;
+        padding:6px 10px;
+        background:rgba(15,23,42,0.9);
+        color:white;
+        font-size:12px;
+        border-radius:8px;
+        pointer-events:none;
+        white-space:nowrap;
+    }
+
+    .range-pill {
+        display:inline-block;
+        padding:6px 10px;
+        border-radius:999px;
+        border:1px solid #22c55e;
+        font-size:12px;
+        cursor:pointer;
+        margin-right:6px;
+        color:#166534;
+        background:#ecfdf5;
+    }
+    .range-pill.active {
+        background:#22c55e;
+        color:white;
+    }
+
+    .nodata {
+        padding:16px;
+        font-size:14px;
+        color:#64748b;
+    }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="left">
+    <img src="ChatGPT Image 2025年11月17日 17_47_21.png" alt="frog">
+    <div>
+      <div class="title-main">思维星图 · 我的思维宇宙</div>
+      <div class="title-sub">基于你所有历史记录生成的关键词星图</div>
+    </div>
+  </div>
+
+  <button onclick="window.location.href='index.html'">← 返回训练主页</button>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <div class="section-title">说明</div>
+    <div class="section-desc">
+      这里展示的是你在「思维冒险者」里写下的所有内容中，自动提取出的高频关键词。<br>
+      · 绿色圆点代表一个关键词，越大出现得越频繁。<br>
+      · 圆点之间的连线代表它们在同一条记录中经常一起出现。<br>
+      · 把鼠标移动到圆点上，可以看到该关键词的频次。<br>
+    </div>
+
+    <div style="margin-top:4px; margin-bottom:8px;">
+        <span class="range-pill active" id="range-all" onclick="setRange('all')">全部历史</span>
+        <span class="range-pill" id="range-30" onclick="setRange('30')">最近 30 天</span>
+        <span class="range-pill" id="range-7" onclick="setRange('7')">最近 7 天</span>
+    </div>
+
+    <div id="map-container">
+      <div id="map"></div>
+    </div>
+
+    <div id="map-nodata" class="nodata" style="display:none;">
+        目前还没有可用数据 🐸 <br>
+        请先在训练主页多写几条记录，然后再回来看看你的思维宇宙。
+    </div>
+  </div>
+
+</div>
+
+<div id="tooltip" class="tooltip" style="display:none;"></div>
+
+<script>
+// =========== 全局变量 ==========
+let currentRange = "all"; // all / 30 / 7
+
+function setRange(r) {
+    currentRange = r;
+    document.getElementById("range-all").classList.toggle("active", r==="all");
+    document.getElementById("range-30").classList.toggle("active", r==="30");
+    document.getElementById("range-7").classList.toggle("active", r==="7");
+    drawMindMap(); // 重新绘制
+}
+
+// =========== 绘制星图主函数 ==========
+function drawMindMap() {
+    const logs = JSON.parse(localStorage.getItem("logs") || "[]");
+    if (!logs.length) {
+        document.getElementById("map").innerHTML = "";
+        document.getElementById("map-nodata").style.display = "block";
+        return;
+    }
+
+    const now = Date.now();
+    let filtered = logs;
+    if (currentRange === "30") {
+        const ms = 30 * 24 * 3600 * 1000;
+        filtered = logs.filter(r => now - new Date(r.date).getTime() < ms);
+    } else if (currentRange === "7") {
+        const ms = 7 * 24 * 3600 * 1000;
+        filtered = logs.filter(r => now - new Date(r.date).getTime() < ms);
+    }
+
+    if (!filtered.length) {
+        document.getElementById("map").innerHTML = "";
+        document.getElementById("map-nodata").style.display = "block";
+        return;
+    } else {
+        document.getElementById("map-nodata").style.display = "none";
+    }
+
+    // ===== 1. 提取文本 & 元素/标准
+    let textAll = "";
+    filtered.forEach(r=>{
+        textAll += " " + (r.text || "") + " " + (r.element || "") + " " + (r.standard || "");
+    });
+
+    // ===== 2. 简单中文&英文分词
+    textAll = textAll.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]+/g, " ");
+    const rawTokens = textAll.split(/\s+/).filter(Boolean);
+
+    // 停用词（简单版）
+    const stopWords = [
+        "我们","你们","他们","自己","这个","那个","就是","然后",
+        "如果","因为","所以","感觉","可能","还是","有点","非常",
+        "一种","一些","很多","比较","可以","不会","不是","没有","觉得"
+    ];
+
+    const tokens = rawTokens.filter(w=>{
+        // 中文：长度至少2；英文：至少3
+        const isChinese = /[\u4e00-\u9fa5]/.test(w);
+        if (isChinese && w.length < 2) return false;
+        if (!isChinese && w.length < 3) return false;
+        if (stopWords.includes(w)) return false;
+        return true;
+    });
+
+    if (!tokens.length) {
+        document.getElementById("map").innerHTML = "";
+        document.getElementById("map-nodata").style.display = "block";
+        return;
+    }
+
+    // ===== 3. 统计频率
+    const freqMap = {};
+    tokens.forEach(w=> freqMap[w] = (freqMap[w] || 0) + 1);
+
+    let entries = Object.entries(freqMap);
+    // 按频率排序，取前 25 个
+    entries.sort((a,b)=>b[1]-a[1]);
+    entries = entries.slice(0, 25);
+
+    const nodes = entries.map(([word, count], i)=>({
+        id: word,
+        count,
+        r: 10 + count * 4,
+        group: i % 5
+    }));
+
+    // ===== 4. 共现关系（粗略：随机连 1~3 条边）
+    const links = [];
+    for (let i=0; i<nodes.length; i++) {
+        for (let j=i+1; j<nodes.length; j++) {
+            if (Math.random() < 0.09) { // 少量连线
+                links.push({source:nodes[i].id, target:nodes[j].id});
+            }
+        }
+    }
+
+    const width = 900;
+    const height = 480;
+
+    // 清空旧图
+    d3.select("#map").html("");
+
+    const svg = d3.select("#map")
+        .append("svg")
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
+
+    const color = d3.scaleOrdinal()
+        .domain([0,1,2,3,4])
+        .range(["#22c55e","#16a34a","#15803d","#0f766e","#4ade80"]);
+
+    const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d=>d.id).distance(80).strength(0.5))
+        .force("charge", d3.forceManyBody().strength(-120))
+        .force("center", d3.forceCenter(width/2, height/2))
+        .force("collision", d3.forceCollide().radius(d=>d.r+4));
+
+    const link = svg.append("g")
+        .attr("stroke", "#a7f3d0")
+        .attr("stroke-opacity", 0.7)
+        .selectAll("line")
+        .data(links)
+        .join("line")
+        .attr("stroke-width", 1.2);
+
+    const node = svg.append("g")
+        .selectAll("g")
+        .data(nodes)
+        .join("g")
+        .attr("class","node")
+        .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended)
+        );
+
+    node.append("circle")
+        .attr("r", d=>d.r)
+        .attr("fill", d=>color(d.group))
+        .on("mousemove", (event,d)=>showTooltip(event, d))
+        .on("mouseleave", hideTooltip);
+
+    node.append("text")
+        .text(d=>d.id)
+        .attr("text-anchor","middle")
+        .attr("dy", 4);
+
+    simulation.on("tick", ()=>{
+        link
+            .attr("x1", d=>d.source.x)
+            .attr("y1", d=>d.source.y)
+            .attr("x2", d=>d.target.x)
+            .attr("y2", d=>d.target.y);
+
+        node
+            .attr("transform", d=>`translate(${d.x},${d.y})`);
+    });
+
+    function dragstarted(event,d){
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+    function dragged(event,d){
+        d.fx = event.x;
+        d.fy = event.y;
+    }
+    function dragended(event,d){
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+}
+
+// tooltip
+const tooltip = document.getElementById("tooltip");
+function showTooltip(event,d){
+    tooltip.style.display = "block";
+    tooltip.style.left = (event.pageX + 8) + "px";
+    tooltip.style.top = (event.pageY + 8) + "px";
+    tooltip.innerText = `${d.id} · 出现 ${d.count} 次`;
+}
+function hideTooltip(){
+    tooltip.style.display = "none";
+}
+
+// 初始绘制
+drawMindMap();
+</script>
+
+</body>
+</html>
