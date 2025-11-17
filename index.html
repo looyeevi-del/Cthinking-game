@@ -46,7 +46,7 @@
         padding: 20px;
     }
 
-    /* 最漂亮的卡片卡片！！ */
+    /* 最漂亮的玻璃卡片 */
     .card {
         background: rgba(255,255,255,0.65);
         backdrop-filter: blur(14px);
@@ -84,7 +84,6 @@
         border-radius: 12px;
         border: 1px solid #cbd5e1;
         font-size: 15px;
-        box-sizing: border-box;
         background: white;
         margin-top: 10px;
         min-height:140px;
@@ -138,6 +137,29 @@
         background: linear-gradient(90deg,#60a5fa,#2563eb);
         width: 0%;
         transition: width 0.5s ease;
+    }
+
+    /* 大师思维动画条 */
+    .thinking-flow {
+        display:flex;
+        gap:8px;
+        margin-top:12px;
+        flex-wrap:wrap;
+    }
+    .thinking-step {
+        padding:6px 10px;
+        border-radius:6px;
+        background:#e2e8f0;
+        color:#334155;
+        font-size:14px;
+        opacity:0.4;
+        transition:0.3s;
+    }
+    .thinking-step.active {
+        background:#3b82f6;
+        color:white;
+        opacity:1;
+        transform:scale(1.08);
     }
 </style>
 </head>
@@ -217,183 +239,360 @@
 
 </div>
 
-<!-- ================= JS ================= -->
+<!-- =============== 大师动画模块 =============== -->
+<div class="container">
+<div class="card">
+    <div class="section-title">✨ 大师思维动画（自动展示八要素）</div>
+    <div class="thinking-flow">
+        <div class="thinking-step" id="step-purpose">目的</div>
+        <div class="thinking-step" id="step-question">问题</div>
+        <div class="thinking-step" id="step-info">信息</div>
+        <div class="thinking-step" id="step-concept">概念</div>
+        <div class="thinking-step" id="step-assumption">假设</div>
+        <div class="thinking-step" id="step-inference">推论</div>
+        <div class="thinking-step" id="step-view">视角</div>
+        <div class="thinking-step" id="step-impact">后果</div>
+    </div>
+</div>
+</div>
+
 <script>
-/********** 元素卡 **********/
-const elementCards = [
-    {key:"目的", text:"【目的卡】你的真正目的是什么？表面目的是？"},
-    {key:"问题", text:"【问题卡】把你纠结的一件事，改写成一个清晰的问题句。"},
-    {key:"信息", text:"【信息卡】写出该问题：3 个事实 + 3 个猜测"},
-    {key:"概念", text:"【概念卡】选一个抽象词（如自由/安全），写下你的定义。"},
-    {key:"推论", text:"【推论卡】写一个结论，并列出支撑理由。"},
-    {key:"假设", text:"【假设卡】你的默认假设是什么？如果这是错的呢？"},
-    {key:"视角", text:"【视角卡】从对立面视角写 2 句话。"},
-    {key:"后果", text:"【后果卡】写出一个决定的短期 + 长期后果。"},
-];
-
-/********** 标准卡 **********/
-const standardCards = [
-    {key:"清晰", text:"【清晰卡】你的表达是否让陌生人能理解？"},
-    {key:"准确", text:"【准确卡】哪些是事实？哪些可能错误？"},
-    {key:"精确", text:"【精确卡】可以更具体吗？"},
-    {key:"相关", text:"【相关卡】每句话都紧扣核心问题吗？"},
-    {key:"深刻", text:"【深刻卡】你触到问题的难点了吗？"},
-    {key:"广度", text:"【广度卡】如果必须站反方，你会怎么写？"},
-    {key:"逻辑", text:"【逻辑卡】理由与结论一致吗？"},
-    {key:"重要性", text:"【重要性卡】你关注的是最关键之处吗？"},
-    {key:"公正", text:"【公正卡】你是否对自己和他人用同一标准？"},
-];
-
-/********** 抽卡函数 **********/
-function drawElementCard() {
-    const c = elementCards[Math.floor(Math.random()*elementCards.length)];
-    document.getElementById("elementCard").innerText = c.text;
-    localStorage.setItem("today_element", JSON.stringify(c));
-}
-function drawStandardCard() {
-    const c = standardCards[Math.floor(Math.random()*standardCards.length)];
-    document.getElementById("standardCard").innerText = c.text;
-    localStorage.setItem("today_standard", JSON.stringify(c));
-}
-
-/********** 等级系统配置 **********/
-const LEVELS = [
-    { level: 1, name: "思维萌芽 Seedling", min: 0, max: 99, percentile: 20 },
-    { level: 2, name: "思维观察者 Observer", min: 100, max: 249, percentile: 35 },
-    { level: 3, name: "思维探索者 Explorer", min: 250, max: 499, percentile: 50 },
-    { level: 4, name: "思维实践者 Practitioner", min: 500, max: 899, percentile: 70 },
-    { level: 5, name: "思维策士 Strategist", min: 900, max: 1499, percentile: 85 },
-    { level: 6, name: "思维驾驭者 Navigator", min: 1500, max: 2499, percentile: 95 },
-    { level: 7, name: "思维大师 Master", min: 2500, max: 999999, percentile: 99 },
-];
-
-// 每日 EXP
-function calculateEXP(r){ return (r.standardScore + r.honestyScore) * 5; }
-function getTotalEXP(logs){ return logs.reduce((a,r)=>a+calculateEXP(r),0); }
-function getLevel(total){ return LEVELS.find(l=>total>=l.min && total<=l.max); }
-function getNextEXP(lv){ return lv.level==7? lv.max : LEVELS[lv.level].min; }
-
-/********** 保存记录 **********/
-function saveToday(){
-    const e = JSON.parse(localStorage.getItem("today_element"));
-    const s = JSON.parse(localStorage.getItem("today_standard"));
-    if(!e||!s){ alert("请先抽卡！"); return; }
-
-    const text=document.getElementById("elementAnswer").value.trim();
-    const rec={
-        date:new Date().toISOString().slice(0,10),
-        element:e.key,
-        standard:s.key,
-        text,
-        standardScore:parseInt(document.getElementById("standardScore").value),
-        honestyScore:parseInt(document.getElementById("honestyScore").value)
-    };
-    let logs=JSON.parse(localStorage.getItem("logs")||"[]");
-    logs.push(rec);
-    localStorage.setItem("logs",JSON.stringify(logs));
-
-    alert("已保存！");
-    updateLevelUI();
-}
-
-/********** 更新等级 UI **********/
-function updateLevelUI(){
-    const logs=JSON.parse(localStorage.getItem("logs")||"[]");
-    const total=getTotalEXP(logs);
-    const lv=getLevel(total);
-    const next=getNextEXP(lv);
-    const pct = Math.min((total-lv.min)/(next-lv.min),1)*100;
-
-    document.getElementById("level-title").innerText=`等级 Lv.${lv.level}：${lv.name}`;
-    document.getElementById("level-exp-text").innerText=`积分：${total} / ${next}`;
-    document.getElementById("progress-bar").style.width = pct+"%";
-    document.getElementById("percentile-text").innerText =
-        `你的思维水平超过了全球 ${lv.percentile}% 的人类`;
-}
-
-/********** 图表 **********/
-let elementRadarChart,standardRadarChart,stageTrendChart;
-
-function calcElementFrequency(logs){
-    const keys=["目的","问题","信息","概念","推论","假设","视角","后果"];
-    return {labels:keys,data:keys.map(k=>logs.filter(r=>r.element==k).length)};
-}
-function calcStandardScores(logs){
-    const keys=["清晰","准确","精确","相关","深刻","广度","逻辑","重要性","公正"];
-    return {labels:keys,data:keys.map(k=>{
-        const l=logs.filter(r=>r.standard==k);
-        return l.length? l.reduce((a,b)=>a+b.standardScore,0)/l.length : 0;
-    })};
-}
-function calcStageTrend(logs){
-    logs=[...logs].sort((a,b)=>new Date(a.date)-new Date(b.date));
-    return {
-        labels:logs.map(r=>r.date),
-        values:logs.map(r=>{
-            const sc=(r.standardScore+r.honestyScore)/2;
-            if(sc<2) return 1;
-            if(sc<2.5) return 2;
-            return 3;
-        })
-    };
-}
-
-function showWeekly(){
-    const logs=JSON.parse(localStorage.getItem("logs")||"[]");
-    const now=Date.now(),week=7*24*3600*1000;
-    const weekLogs=logs.filter(r=>now-new Date(r.date).getTime()<week);
-    const el=document.getElementById("weeklyStats");
-
-    if(!weekLogs.length){
-        el.innerText="本周还没有记录";
-        renderCharts(logs);
-        return;
-    }
-
-    const avg=(arr,key)=>arr.reduce((a,b)=>a+b[key],0)/arr.length;
-
-    el.innerText=
-        `本周练习次数：${weekLogs.length}\n`+
-        `平均标准得分：${avg(weekLogs,"standardScore").toFixed(2)}\n`+
-        `平均诚实度：${avg(weekLogs,"honestyScore").toFixed(2)}\n`+
-        `覆盖要素：${[...new Set(weekLogs.map(r=>r.element))].join("，")}\n`+
-        `覆盖标准：${[...new Set(weekLogs.map(r=>r.standard))].join("，")}`;
-
-    renderCharts(logs);
-}
-
-function renderCharts(logs){
-    const e=calcElementFrequency(logs);
-    const s=calcStandardScores(logs);
-    const st=calcStageTrend(logs);
-
-    if(elementRadarChart) elementRadarChart.destroy();
-    if(standardRadarChart) standardRadarChart.destroy();
-    if(stageTrendChart) stageTrendChart.destroy();
-
-    elementRadarChart=new Chart(document.getElementById("elementRadar"),{
-        type:'radar',
-        data:{labels:e.labels,datasets:[{label:"练习次数",data:e.data,
-            borderColor:"#3b82f6",backgroundColor:"rgba(59,130,246,0.25)"}]}
+let steps = ["purpose","question","info","concept","assumption","inference","view","impact"];
+let index = 0;
+setInterval(()=>{
+    steps.forEach(s=>{
+        document.getElementById("step-"+s).classList.remove("active");
     });
-
-    standardRadarChart=new Chart(document.getElementById("standardRadar"),{
-        type:'radar',
-        data:{labels:s.labels,datasets:[{label:"平均分",data:s.data,
-            borderColor:"#ef4444",backgroundColor:"rgba(239,68,68,0.25)"}]}
-    });
-
-    stageTrendChart=new Chart(document.getElementById("stageTrend"),{
-        type:'line',
-        data:{labels:st.labels,datasets:[{label:"阶段趋势(1挣扎/2初学/3练习)",
-            data:st.values,borderColor:"#10b981",tension:0.3}]},
-        options:{scales:{y:{min:1,max:3,stepSize:1}}}
-    });
-}
-
-/* 网页加载时更新等级 */
-updateLevelUI();
+    document.getElementById("step-"+steps[index]).classList.add("active");
+    index = (index+1)%steps.length;
+}, 1800);
 </script>
 
+<!-- =============== 五大大师卡片（折叠模块） =============== -->
+
+<!-- 大师卡片 1：处理冲突 -->
+<div class="container">
+<div class="card" style="cursor:pointer;" onclick="toggleMasterCard('conflict')">
+    <div class="section-title">🧠 大师如何处理冲突？（点击展开）</div>
+    <div id="master-conflict" style="display:none; white-space:pre-wrap; line-height:1.6; font-size:15px;">
+
+【大师如何处理冲突？】
+以下内容基于《批判性思维工具》八要素 + 九标准整理
+
+────────────────────────────
+🎯 1. 目的（Purpose）
+────────────────────────────
+大师首先问：
+“冲突的目的不是‘赢’，而是‘理解 → 对齐 → 共同解法’。”
+
+────────────────────────────
+❓ 2. 核心问题（Question）
+────────────────────────────
+“大问题是什么？
+是误解？价值观不同？还是需要未被满足？”
+
+────────────────────────────
+📚 3. 信息（Information）
+────────────────────────────
+大师区分：
+• 事实：发生了什么？  
+• 推测：我以为发生了什么？  
+• 情绪：我感受到什么？
+
+────────────────────────────
+🔎 4. 概念（Concept）
+────────────────────────────
+大师把冲突定义为：
+“未表达清楚的需要 + 未理解到位的意图。”
+
+────────────────────────────
+🧩 5. 假设（Assumptions）
+────────────────────────────
+大师检查隐藏假设：
+• “对方是故意针对我？”  
+• “只有我受伤？”  
+• “冲突只有输赢？”  
+并问：“这些假设是真的吗？”
+
+────────────────────────────
+👓 6. 视角（Point of View）
+────────────────────────────
+大师至少从三个视角看问题：
+• 自己  
+• 对方  
+• 第三方旁观者（最重要）
+
+────────────────────────────
+🔁 7. 推论（Inference）
+────────────────────────────
+大师不会直接下判断，而是：
+“为了达成共识，还需要哪些信息？”
+
+────────────────────────────
+🌍 8. 后果（Implications）
+────────────────────────────
+大师评估不同做法的长期后果：
+
+• 强硬压制 → 关系破裂  
+• 退让 → 积累怨气  
+• 理解对方需求 → 找到更优解  
+
+────────────────────────────
+🧠 九标准自检（Standards）
+────────────────────────────
+大师问：
+• 我清晰吗？  
+• 我准确吗？  
+• 我公平吗？  
+• 我是否只想赢？  
+
+────────────────────────────
+🌈 大师总结（Meta-cognition）
+────────────────────────────
+大师最终做四件事：
+1) 先理解情绪  
+2) 再确认需求  
+3) 再表达自己的需求  
+4) 再共同找解法  
+
+大师不把冲突当成战争，而是：
+**“共同发现更好的现实。”**
+
+    </div>
+</div>
+</div>
+
+
+<!-- 大师卡片 2：看情绪 -->
+<div class="container">
+<div class="card" style="cursor:pointer;" onclick="toggleMasterCard('emotion')">
+    <div class="section-title">🧠 大师如何看情绪？（点击展开）</div>
+    <div id="master-emotion" style="display:none; white-space:pre-wrap; line-height:1.6; font-size:15px;">
+
+【大师如何看情绪？】
+
+────────────────────────────
+🎯 目的
+不是压抑情绪，而是：
+“听懂情绪背后的真实信息。”
+
+────────────────────────────
+📚 信息（情绪 = 信息）
+根据《批判性思维工具》的模型：
+情绪由三部分构成：
+1）事件  
+2）解释（自动想法）  
+3）需求（未被满足）
+
+大师盯着的是：第 2 和第 3。
+
+────────────────────────────
+🔎 概念
+大师把情绪定义为：
+**“思维还没处理完的信号。”**
+
+────────────────────────────
+🧩 假设
+大师反问：
+“我对事件的解释是否准确？”
+
+例如：
+“他不回我消息” ≠ “他不重视我”。
+
+────────────────────────────
+👓 视角
+大师从三个角度重新解释情绪：
+• 自己的角度  
+• 对方角度  
+• 中立旁观者角度  
+
+────────────────────────────
+🌍 后果
+大师评估：
+“我如果直接按情绪行动，会造成什么？”
+
+────────────────────────────
+🌈 大师总结
+大师不是没有情绪，
+而是：
+**情绪不主导思维，情绪提示思维。**
+
+    </div>
+</div>
+</div>
+
+
+<!-- 大师卡片 3：做重要决定 -->
+<div class="container">
+<div class="card" style="cursor:pointer;" onclick="toggleMasterCard('decision')">
+    <div class="section-title">🧠 大师如何做重要决定？（点击展开）</div>
+    <div id="master-decision" style="display:none; white-space:pre-wrap; line-height:1.6; font-size:15px;">
+
+【大师如何做重要决定？】
+
+────────────────────────────
+🎯 1. 目的
+大师问：
+“我做这个决定，是为了什么？”
+
+（重要决定失败的根源往往是“目的不清”）
+
+────────────────────────────
+❓ 2. 核心问题
+大师把大问题拆成小问题。
+
+例如：
+“我要不要换工作？” → 拆成：
+• 我的长期职业路线是什么？  
+• 当前工作提供什么？  
+• 新工作提供什么？  
+
+────────────────────────────
+📚 3. 信息
+大师区分：
+• 已知  
+• 未知  
+• 不知道自己不知道的  
+
+（顶点思维者的优势就在这个第三类）
+
+────────────────────────────
+🔎 4. 概念
+大师会定义关键概念，例如：
+“风险 = 损失概率 × 损失严重度”
+
+────────────────────────────
+🧩 5. 假设
+大师写出：
+“我当前的假设是什么？”  
+并问：“如果这个假设是错的，会怎样？”
+
+────────────────────────────
+👓 6. 视角
+大师从未来的自己角度（5–10 年后）做决定。
+
+────────────────────────────
+🌍 7. 后果
+大师评估：
+• 做  
+• 不做  
+• 推迟
+
+三种情况的后果。
+
+（普通人只看做与不做，大师看“不做的代价”）
+
+────────────────────────────
+🌈 大师总结
+大师做重要决定遵循：
+**“做最不后悔的选择。”**
+
+    </div>
+</div>
+</div>
+
+
+<!-- 大师卡片 4：判断信息真假 -->
+<div class="container">
+<div class="card" style="cursor:pointer;" onclick="toggleMasterCard('truth')">
+    <div class="section-title">🧠 大师如何判断信息真假？（点击展开）</div>
+    <div id="master-truth" style="display:none; white-space:pre-wrap; line-height:1.6; font-size:15px;">
+
+【大师如何判断信息真假？】
+
+────────────────────────────
+🎯 目的
+大师问：
+“我是在找真实？还是找我想相信的东西？”
+
+────────────────────────────
+📚 信息检查（大师四问）
+1）信息来源可靠么？  
+2）证据充分么？  
+3）推论逻辑一致吗？  
+4）是否可以被证伪？  
+
+────────────────────────────
+🧩 假设
+大师怀疑自己的第一反应：
+“我是不是太快相信了？”
+
+────────────────────────────
+👓 视角
+大师主动寻找反对证据。
+
+（普通人只看支持证据）
+
+────────────────────────────
+🌍 后果
+错误信息的代价 → 极高。
+
+────────────────────────────
+🌈 大师总结
+大师不是更聪明，
+而是：
+**更愿意检验自己的信念。**
+
+    </div>
+</div>
+</div>
+
+
+<!-- 大师卡片 5：如何学习 -->
+<div class="container">
+<div class="card" style="cursor:pointer;" onclick="toggleMasterCard('learning')">
+    <div class="section-title">🧠 大师如何学习？（点击展开）</div>
+    <div id="master-learning" style="display:none; white-space:pre-wrap; line-height:1.6; font-size:15px;">
+
+【大师如何学习？】
+
+────────────────────────────
+🎯 目的
+大师学习不是为了“记住内容”，  
+而是为了“升级思维模型”。
+
+────────────────────────────
+📚 信息
+大师找的是：
+• 核心概念  
+• 内在结构  
+（这是《批判性思维工具》强调的“抓内在逻辑结构”）
+
+────────────────────────────
+🔎 概念
+大师问：
+“这个学科最核心的思维要素是什么？”
+
+────────────────────────────
+🧩 假设
+大师反问：
+“我以为我懂了吗？我真的懂了吗？”
+
+────────────────────────────
+👓 视角
+大师把新知识与：
+• 生活  
+• 决策  
+• 未来计划  
+发生连接。
+
+────────────────────────────
+🌈 大师总结
+大师学习不是反复记忆，而是：
+**理解结构 → 用结构解释世界。**
+
+    </div>
+</div>
+</div>
+
+<!-- =============== 折叠 JS =============== -->
+<script>
+function toggleMasterCard(id){
+    const el = document.getElementById("master-"+id);
+    el.style.display = el.style.display === "none" ? "block" : "none";
+}
+</script>
+
+<!-- ===== 最终结束 Body 和 HTML ===== -->
 </body>
 </html>
